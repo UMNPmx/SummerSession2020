@@ -1,18 +1,15 @@
 # UMN_R4PMx_2020
 Summer 2020 R workshop for pharmacometrics related topics. Content put on by ECP senior students.
 
-When: Mondays from 15th June to 3rd August (8 sessions)
-
-Where: Zoom (Link will be sent by the moderator)
-
-Time: Flexible based on the moderator (1-2 hours)
-
-Format:
-+ Sessions will be moderated by someone with decent experience on the topic.
-+ Each moderator will provide the following at the start/during the course of the session:
-		- A cheat-sheet on the day’s topic
-		- An R-markdown file with incomplete code which attendees can code-along during the demonstration (like the one Kyle provided for the mrgsolve workshop). The moderator can also include a homework type exercise at the end, if they choose.
-		- A dataset if needed. Try using a open-source data set like “mtcars”
+**When**: Mondays from 15th June to 3rd August (8 sessions)<br>
+**Where**: Zoom (Link will be sent by the moderator)<br>
+**Time**: Flexible based on the moderator (1-2 hours)<br>
+**Format**:
+- Sessions will be moderated by someone with decent experience on the topic.
+- Each moderator will provide the following at the start/during the course of the session:
+	- A cheat-sheet on the day’s topic
+	- An R-markdown file with incomplete code which attendees can code-along during the demonstration (like the one Kyle provided for the mrgsolve workshop). The moderator can also include a homework type exercise at the end, if they choose.
+	- A dataset if needed. Try using a open-source data set like “mtcars”
 
 ## Agenda
 |DATE|MODERATOR|TOPICS|
