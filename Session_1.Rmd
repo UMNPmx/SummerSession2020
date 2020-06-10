@@ -16,6 +16,8 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, results=FALSE)
 + Brief introduction of RStudio
 + Install packages
 + Basic date type and structures
+    + Operators
+    + Subsetting
 
 
 # Download R and RStudio
@@ -73,13 +75,13 @@ Commonly used objects:
 + **Factors**: `factor()`. Factors are the r-objects which are created using a vector. It stores the vector along with the distinct values of the elements in the vector as labels. 
 + **Data Frames**: `data.frame()`. Data frames are tabular data objects.
 
-Six cleasses of atomic vectors:
+Six classes of atomic vectors:
 
-+ **Logical**: `TRUE`, `FALSE`
++ **Logical**: `TRUE`, `FALSE`. You can do math with logical vectors. 
 + **Numeric**: `2`, `2.5`
-+ **Integer**: `2L`, `0L`
++ **Integer**: `2L`, `0L`. Produce them using `:` shortcut. For example: `1:0`
 + **Complex**: `3+2i`
-+ **Character**:`"a"`, `"good"`, `"TRUE"`
++ **Character**:`"a"`, `"good"`, `"TRUE"`. Character data usually can't go directly into a statistical model1, but factor data can. *Note: Most R models will automatically convert character data to factors. The default reference is chosen alphabetically.*
 + **Raw**: `"Hello"` is stored as 48 65 6c 6c 6f (I've never used it.)
 
 Functions to check the features of vectors and other objects: 
@@ -106,12 +108,175 @@ Functions for data frame (commonly used):
 + `names()` or `colnames()` - both show the names attribute for a data frame
 + `sapply(dataframe, class)` - shows the class of each column in the data frame
 
-## Assignment Operator
+## Operators
+### Assignment operators 
 + Use `<-` for assignments. (Short cut: <kbd>Alt</kbd> + <kbd>-</kbd>)
 + Use `=` for specify the values of arguments in functions.
 
+### Arithmetic operators 
+
+|Operator|Description|
+|:--|:--|
+|`+`|Addition|
+|`-`|Subtraction|
+|`*`|Multiplication|
+|`/`|Division|
+|`^`|Exponent|
+|`%%`|Modulus (Remiander from division)|
+|`%/%`|Integer Division|
+
+Examples: 
+
+```{r}
+# single element vector
+x <- 2; y <- 15
+x+y
+x-y
+x*y
+y/x
+y%%x
+y^2
+
+# use `c()` to concatenate or combine element to make vectors
+x <- c(1,3,5)
+y <- c(2,4,6)
+x+y
+
+fruits <- c("apple", "banana", "cherry")
+# which word has odd number of letters? 
+name_lengths <- nchar(fruits) # number of character
+odd_letters <- (name_lengths %% 2 == 1)
+odd_letters
+
+# which word has first letter of b? 
+first_letter_b <- (substr(fruits, start = 1, stop = 1) == "b") # substring a char vector
+first_letter_b
+```
+
+### Vector Recylcing
++ When performing an operation on two or more vectors of unequal length, R will recycle elements of the shorter vector(s) to match the longest vector.
+
++ There are no scalars in R. The smallest is a single element vector (can think of a scalar)
+
++ R will issue a warning if the length of the longer vector is not an integral multiple of the shorter vector.
+
+```{r}
+x <- c(2,4,6,8)
+y <- c(1,3)
+x+y # Element of y is recycled to 1,3,1,3
+x*2 # Single element  Scalar 1 is recycled to 2,2,2,2
+x+c(1,3,5) # Error message: longer object length is not a multiple of shorter object length
+```
+
++ Vector-Wise Math: Some functions operate on an entire vector and return *one number* rather than working element-wise:
+    - For example: `sum()`,`min()`, `max()`, `mean()`, `sd()`, `var()`
+
+```{r}
+a <- 1:10
+sum(a); mean(a); sd(a)
+
+# Standardizing Data
+z <- (a -mean(a)) / sd(a)
+round(z,2)
+
+# Alternatively, use `scale()`
+z2 <- scale(a)
+round(z2,2)
+```
+
+    
+### Relational operators 
+
+|Operator|Description|
+|:--|:--|
+|`<`|Less than|
+|`>`|Greater than|
+|`<=`|Less than or equal to|
+|`>=`|Greater than or equal to|
+|`==`|Equal to|
+|`!=`|Not equal to|
+
+Examples: 
+
+```{r}
+x <- 2; y <- 15
+x < y
+x > y
+x <= 2
+y >= 16
+y == 15
+x != 2 
+
+
+fruits <- c("apple", "banana", "cherry")
+# which word has 6 or more letters? 
+name_lengths <- nchar(fruits) # number of character
+name_lengths >= 6
+mean(name_lengths >= 6) # proportion of name lengths greater than or equal to 6
+```
+
+
+### Logical operators 
+
+|Operator|Description|
+|:--|:--|
+|`!`|Logical NOT|
+|`&`|Element-wise logical AND|
+|`&&`|Logical AND|
+|`|`|Element-wise logical OR|
+|`||`|Logical OR|
+
++ Operators `&` and `|` perform element-wise operation producing result having length of the longer operand.
+
++ Operators `&&` and `||` examines only the first element of the operands resulting into a single length logical vector.
+
++ Zero is considered `FALSE` and non-zero numbers are taken as `TRUE`.
+
+Examples: 
+
+```{r}
+x <- c(TRUE,FALSE,0,6)
+y <- c(FALSE,TRUE,FALSE,TRUE)
+!x
+x&y
+x&&y
+x|y
+x||y
+```
+
 ## Available data sets in R
 Use `data()` to view all available dataset. Call the data set by its name directly. For example: `ChickWeight`,`iris`
+
+## Subsetting Vectors
++ Passing a single index or vector of entries to **keep**:
+```{r}
+fruits[c(1,3)]
+```
+
++ Passing a single index or vector of entries to **drop**:
+```{r}
+fruits[-c(1,3)]
+```
+
++ Passing a logical vector (`TRUE`=keep, `FALSE`=drop):
+```{r}
+fruits[odd_letters|first_letter_b]
+
+color = c("red", "yellow", "red") # create a color vector corresponds to fruits
+fruits[color != "yellow"] # != is "not equal to"
+```
+
++ `%in%` avoids typing a lot of logical ORs (`|`):
+```{r}
+fruits %in% c(fruits[color=="red"])
+```
+
+
++ `which()` returns the indices of `TRUEs` in a logical vector:
+```{r}
+which(fruits %in% c(fruits[color=="red"]))
+```
+
 
 ## Practice
 1. Create a variable called 'x' and store the number from 0 to 5. Check the features of x.
@@ -139,12 +304,16 @@ l
 class(l); typeof(l)
 ```
 
-2. Create an empty numeric vector with 6 elements and store it as 'a'. Then update 'a' to 6 consequtive even numbers start from 2.
+2. Create an empty numeric vector with 6 elements and store it as 'a'. Then 
++ update 'a' to 6 consequtive even numbers start from 2. 
++ name this vector using consecutive letters start from a
+
 ```{r}
-a <- vector("numeric", length=6)
-a <- numeric(6)
+a <- vector("numeric", length=6) # create an empty numeric vector
+a <- numeric(6) # alternatively
 
 a <- c(2,4,6,8,10,12)
+names(a) <- letters[1:6]
 typeof(a); str(a)
 
 a <- seq(from = 2, to = 12, by = 2) 
@@ -247,17 +416,74 @@ str(df); dim(df); nrow(df); ncol(df); names(df)
 
 # Check if there is any missing values
 anyNA(df)
+
+# Check which is missing 
+is.na(df)
+df$SEX %in% NA # check vector is NA
+
 # Count how many missing values
 sum(as.numeric(is.na(df)))
+
 # Using apply function, same as using a loop (will cover in the next session)
 sapply(df, function(x) sum(is.na(x)))
 
 apply(df, MARGIN = 2, function(x) sum(is.na(x)))
 # count the NAs row-wise (case by case)
 apply(df, MARGIN = 1, function(x) sum(is.na(x)))
-
 ```
 
+# Some Tips for Accessing Model Output
+We want to fit a linear regression model to predict iris sepal length by using its petal length. First, we take a look at the relationship between mpg and cyl:
+
+```{r}
+plot(iris$Sepal.Length~iris$Petal.Length, pch = 16, cex = 1.2, col = "blue")
+abline(lm(Sepal.Length ~ Petal.Length, data=iris), lwd = 2)
+```
+
+We fit the model: 
+```{r}
+regress_model <- lm(Sepal.Length ~ Petal.Length, data=iris)
+class(regress_model); typeof(regress_model); attributes(regress_model)
+
+regress_model$coefficients
+regress_model[["coefficients"]]
+petal_beta <- regress_model[["coefficients"]][["Petal.Length"]] 
+petal_beta
+
+# retrieve standard errrors
+summary(regress_model)
+summary(regress_model)[["coefficients"]]
+petal_SE <- summary(regress_model)[["coefficients"]]["Petal.Length","Std. Error"]
+petal_SE
+
+# calculate 95% CI
+petal_CI <- petal_beta + c(-qnorm(0.975), qnorm(0.975))*petal_SE
+names(petal_CI) <- c("lower", "upper")
+petal_CI
+```
+
+Then generate report directly from the model without copy and paste the model values.
+```{r, eval=FALSE}
+# In a Markdown document:
+A 1 unit increase in petal length is associated with a `r round(petal_beta, 2)` unit increase in septal length (95% CI: (`r round(petal_CI["lower"],2)`,
+                                   `r round(petal_CI["upper"],2)`))
+```
+
+A 1 unit increase in petal length is associated with a `r round(petal_beta, 2)` unit increase in septal length (95% CI: (`r round(petal_CI["lower"],2)`,
+                                   `r round(petal_CI["upper"],2)`))
+                                   
+# Other Practices: `swirl`
+Interactive R tutorials for beginner, intermediate and even advanced learners. More details can be found [here](https://github.com/swirldev/swirl_courses#swirl-courses)
+
+To set up `swirl`: 
+
+1. `install.packages("swirl")`
+2. `library(swirl)`
+3. `swirl()`
+4. Choose `R Programming`, pick a tutorial, and follow directions
+5. To get out of `swirl`, type `bye()` in the middle of a lesson, or `0` in the menus
+
+[Further details](https://swirlstats.com/students.html)
 
 # Resources: 
 1. R Tutorial <https://www.tutorialspoint.com/r/index.htm>
