@@ -59,7 +59,7 @@ install.packages(packs$Package)
 + It has four panels: Console, Scripts, Environments, Files/Plots/Packages/Help.
 + Publish your work to RPubs. [Example](https://rpubs.com/Statinmylife/473540)
 + Autocompletion to save time and reduce errors.
-+ Excute code directly from RStudio script by using the <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in Windows or <kdb>Return</kbd> in Mac.
++ Execute code directly from R Studio script by using the <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in Windows or <kdb>Return</kbd> in Mac.
 + <kbd>Ctrl</kbd> + <kbd>1</kbd> and <kbd>Ctrl</kbd> + <kbd>2</kbd> jump between the script and the console windows.
 + Use <kbd>#</kbd> signs to comment. (comment as detailed as you can)
 
@@ -89,9 +89,9 @@ Functions to check the features of vectors and other objects:
 + `class()`: what kind of object is it? (high level)
 + `typeof()`: what is the data type of this object? (low level)
 + `length()`: how long is it?
-+ `attributes()`: does it have any metadat?
++ `attributes()`: does it have any metadata?
 
-Functions to check the atrributes of objects:
+Functions to check the attributes of objects:
 
 + `names()`
 + `dimnames()`
@@ -122,7 +122,7 @@ Functions for data frame (commonly used):
 |`*`|Multiplication|
 |`/`|Division|
 |`^`|Exponent|
-|`%%`|Modulus (Remiander from division)|
+|`%%`|Modulus (Remainder from division)|
 |`%/%`|Integer Division|
 
 Examples: 
@@ -305,7 +305,7 @@ class(l); typeof(l)
 ```
 
 2. Create an empty numeric vector with 6 elements and store it as 'a'. Then 
-+ update 'a' to 6 consequtive even numbers start from 2. 
++ update 'a' to 6 consecutive even numbers start from 2. 
 + name this vector using consecutive letters start from a
 
 ```{r}

@@ -12,7 +12,7 @@
 
 <meta name="author" content="Ya-Feng Wen" />
 
-<meta name="date" content="2020-06-10" />
+<meta name="date" content="2020-06-13" />
 
 <title>Session 1: R Basics</title>
 
@@ -262,7 +262,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">Session 1: R Basics</h1>
 <h4 class="author">Ya-Feng Wen</h4>
-<h4 class="date">2020-06-10</h4>
+<h4 class="date">2020-06-13</h4>
 
 </div>
 
@@ -324,7 +324,7 @@ install.packages(packs$Package)</code></pre>
 <li>It has four panels: Console, Scripts, Environments, Files/Plots/Packages/Help.</li>
 <li>Publish your work to RPubs. <a href="https://rpubs.com/Statinmylife/473540">Example</a></li>
 <li>Autocompletion to save time and reduce errors.</li>
-<li>Excute code directly from RStudio script by using the <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in Windows or <kdb>Return</kbd> in Mac.</li>
+<li>Execute code directly from R Studio script by using the <kbd>Ctrl</kbd> + <kbd>Enter</kbd> in Windows or <kdb>Return</kbd> in Mac.</li>
 <li><kbd>Ctrl</kbd> + <kbd>1</kbd> and <kbd>Ctrl</kbd> + <kbd>2</kbd> jump between the script and the console windows.</li>
 <li>Use <kbd>#</kbd> signs to comment. (comment as detailed as you can)</li>
 </ul>
@@ -355,9 +355,9 @@ install.packages(packs$Package)</code></pre>
 <li><code>class()</code>: what kind of object is it? (high level)</li>
 <li><code>typeof()</code>: what is the data type of this object? (low level)</li>
 <li><code>length()</code>: how long is it?</li>
-<li><code>attributes()</code>: does it have any metadat?</li>
+<li><code>attributes()</code>: does it have any metadata?</li>
 </ul>
-<p>Functions to check the atrributes of objects:</p>
+<p>Functions to check the attributes of objects:</p>
 <ul>
 <li><code>names()</code></li>
 <li><code>dimnames()</code></li>
@@ -415,7 +415,7 @@ install.packages(packs$Package)</code></pre>
 </tr>
 <tr class="even">
 <td align="left"><code>%%</code></td>
-<td align="left">Modulus (Remiander from division)</td>
+<td align="left">Modulus (Remainder from division)</td>
 </tr>
 <tr class="odd">
 <td align="left"><code>%/%</code></td>
@@ -636,7 +636,7 @@ class(l); typeof(l)</code></pre>
 <li>Create an empty numeric vector with 6 elements and store it as ‘a’. Then</li>
 </ol>
 <ul>
-<li>update ‘a’ to 6 consequtive even numbers start from 2.</li>
+<li>update ‘a’ to 6 consecutive even numbers start from 2.</li>
 <li>name this vector using consecutive letters start from a</li>
 </ul>
 <pre class="r"><code>a &lt;- vector(&quot;numeric&quot;, length=6) # create an empty numeric vector
