@@ -15,11 +15,11 @@ Summer 2020 R workshop for pharmacometrics related topics. Content put on by ECP
 |DATE|MODERATOR|TOPICS|
 |--|--|--|
 |June 15|Ya-Feng|Basics in R - I <li>Using R and RStudio</li> <li>Packages Installations</li>  <li>Basic Data Types and Data Structures in R</li>|
-|June 22|Ashwin,Ya-Feng|Basics in R - II  <li>Loops</li>  <li>Functions</li>|
-|June 29|--|Tidyverse - I  <li>Dplyr</li>|
+|June 22|Shen, Ya-Feng|Basics in R - II  <li>Loops</li>  <li>Functions</li>|
+|June 29|Abhishek, Ashwin|Tidyverse - I  <li>Dplyr</li>|
 |July 6 |Mu’taz, Ashwin|Importance of Visualizations|
-|July 13|Mu’taz, Ashwin|Tidyverse - II <li>GGplot2</li>  <li>Plotly</li>|
-|July 20|Mu’taz|RShiny|
+|July 13|Abhishek, Mu’taz|Tidyverse - II <li>GGplot2</li>  <li>Plotly</li>|
+|July 20|Mu’taz, Ashwin|RShiny|
 |July 27|Ashwin|mrgsolve|
 |August 3|--|Rmarkdown|
 
