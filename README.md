@@ -2,7 +2,7 @@
 Summer 2020 R workshop for pharmacometrics related topics. Content put on by ECP senior students.
 
 **When**: Mondays from 15th June to 3rd August (8 sessions)<br>
-**Where**: Zoom (Link will be sent by the moderator)<br>
+**Where**: Zoom (contact Ashwin at `karan040@umn.edu` for link)<br>
 **Time**: Flexible based on the moderator (1-2 hours)<br>
 **Format**:
 - Sessions will be moderated by someone with decent experience on the topic.
