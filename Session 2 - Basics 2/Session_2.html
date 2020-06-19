@@ -10,9 +10,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Ya-Feng Wen" />
+<meta name="author" content="Ya-Feng Wen &amp; Shen Cheng" />
 
-<meta name="date" content="2020-06-14" />
+<meta name="date" content="2020-06-19" />
 
 <title>Session 2-Functions and Loops</title>
 
@@ -261,8 +261,8 @@ div.tocify {
 
 
 <h1 class="title toc-ignore">Session 2-Functions and Loops</h1>
-<h4 class="author">Ya-Feng Wen</h4>
-<h4 class="date">2020-06-14</h4>
+<h4 class="author">Ya-Feng Wen &amp; Shen Cheng</h4>
+<h4 class="date">2020-06-19</h4>
 
 </div>
 
@@ -274,15 +274,17 @@ div.tocify {
 <li>Loops
 <ul>
 <li>For loops</li>
+<li>Nesting</li>
 <li>While loops</li>
 </ul></li>
 </ul>
+
 </div>
 <div id="functions" class="section level1">
 <h1>Functions</h1>
 <div id="when-should-you-write-a-function" class="section level3">
 <h3>When should you write a function?</h3>
-<p>When you’ve copied and pasted a block of code more than twice! It’s called the DRY (“Do not repeat yourself”) principle.</p>
+<p>When you have copied and pasted a block of code more than twice! It’s called the DRY (“Do not repeat yourself”) principle.</p>
 </div>
 <div id="benefits-of-a-function" class="section level3">
 <h3>Benefits of a function</h3>
@@ -305,7 +307,7 @@ div.tocify {
 <li>List the inputs, or <strong>arguments</strong> (should be nouns), to the function inside <code>function</code></li>
 <li>Place the code you have developed in body of the function, a <code>{</code> block that immediately follows <code>function(...)</code></li>
 </ol>
-<p><em>It’s easier to start with working code and turn it into a function; it’s harder to create a function and then try to make it work.</em></p>
+<p><em>It is easier to start with working code and turn it into a function; it is harder to create a function and then try to make it work.</em></p>
 <ol start="4" style="list-style-type: decimal">
 <li><a href="http://r-pkgs.had.co.nz/tests.html">Unit testing</a> to turn informal, interactive tests into formal, automated tests</li>
 </ol>
@@ -376,8 +378,9 @@ variance &lt;- function(x, na.rm=TRUE) {
 variance(test)
 variance(test) == var(test, na.rm = T)  </code></pre>
 <ol start="3" style="list-style-type: decimal">
-<li>Write a function to calculate drug concentrations until time T and plot the concentration time curve. This function allows you to calcuate drug concentrations following either the one-compartment or two-compartment PK (given as IV) with linear elimination. Recall that concentration can be described as follow: For One-Compartment: <span class="math display">\[C(t) = C_{0} \times e^{-kt}\]</span> For Two-Compartment: <span class="math display">\[C(t) = A e^{-\alpha t} + B e^{-\beta t}\]</span></li>
+<li>Write a function to calculate drug concentrations until time T and plot the concentration time curve. This function allows you to calcuate drug concentrations following either the one-compartment or two-compartment PK (given as IV) with linear elimination. Recall that concentration can be described as follow:</li>
 </ol>
+<p>For One-Compartment: <span class="math display">\[C(t) = C_{0} \times e^{-kt}\]</span> For Two-Compartment: <span class="math display">\[C(t) = A e^{-\alpha t} + B e^{-\beta t}\]</span></p>
 <pre class="r"><code>Dose = 100 # mg
 Vc = 2 # L
 k = 0.1 # hr-1
@@ -423,7 +426,7 @@ twoCmtIV &lt;- function(Dose, Time) {
 #twoCmtIV(100, 24)
 
 
-simulateOneTwoCmtIV &lt;- function(Dose, Time, Cmt) {
+simulateOneTwoCmtIV &lt;- function(Dose, Time, Cmt, ...) {
   # parameters for 1-CMT
   Vc = 2 # L
   k = 0.1 # hr-1
@@ -457,8 +460,222 @@ simulateOneTwoCmtIV &lt;- function(Dose, Time, Cmt) {
 }
 
 #simulateOneTwoCmtIV(100, 24, 1)
+#simulateOneTwoCmtIV(100, 24, 1, Vc=3)
 #simulateOneTwoCmtIV(100, 24, 2)
 #simulateOneTwoCmtIV(100, 24, 3)</code></pre>
+
+</div>
+<div id="loops" class="section level1">
+<h1>Loops</h1>
+<div id="concepts" class="section level3">
+<h3>Concepts</h3>
+<div id="what-is-loop" class="section level4">
+<h4>What is loop?</h4>
+<p>A loop is a sequence of instructions that is repeated until a certain condition is reached. It allows you to repeat operations multiple times without copy-pasting sections of your code.</p>
+</div>
+<div id="why-we-need-loops" class="section level4">
+<h4>Why we need loops?</h4>
+<p>Similar to function writting, using loops can avoid writing same or similar codes repeatedly.</p>
+</div>
+</div>
+<div id="for-loops" class="section level3">
+<h3>for-loops</h3>
+<div id="three-essential-components-to-write-a-for-loop" class="section level4">
+<h4>Three essential components to write a for loop</h4>
+<ul>
+<li>Output</li>
+<li>Sequence</li>
+<li>Body</li>
+</ul>
+</div>
+<div id="syntax-in-general-example-1" class="section level4">
+<h4>Syntax in general (example 1)</h4>
+<p><code>output &lt;- c()</code><br />
+<code>for (val in sequence){body}</code><br />
+<code>output</code></p>
+<p>Example 1</p>
+<pre class="r"><code>#Assemble dataset for example 1
+test_df &lt;- data.frame(
+  v1 = c(1:5, NA, 6:8, NA), 
+  v2 = seq(1,10,1),                         #seq(from, to, by)
+  v3 = c(letters[1:9], NA),                 #letter() generate lower case letters
+  v4 = c(&quot;apple&quot;, &quot;banana&quot;, NA, &quot;cherry&quot;, NA, NA, NA, &quot;orange&quot;, NA, NA)
+  )
+test_df</code></pre>
+<ul>
+<li>purpose: Using the <code>prop_NA()</code> created to calculate the proportion of NAs in each column.</li>
+</ul>
+<pre class="r"><code>prop_NA(test_df$v1) 
+prop_NA(test_df$v2)
+prop_NA(test_df$v3)
+prop_NA(test_df$v4)</code></pre>
+<p>Alternatively, we can use a for-loop</p>
+<pre class="r"><code>output &lt;- c()                         #output
+for (i in 1:4){                       #sequence
+  output[i] &lt;- prop_NA(test_df[,i])   #body
+}
+output</code></pre>
+<p>You can write it in a fancier way which also improves its generalizability.</p>
+<pre class="r"><code>output &lt;- c()
+for (i in seq_along(test_df)){         
+  output[[i]] &lt;- prop_NA(test_df[[i]]) 
+}
+output</code></pre>
+<ul>
+<li>seq_along() creates a sequence from 1 to the length of the input</li>
+<li>[[ ]] can be used for elements selection for both vector and dataframe otherwise will have to use different syntax</li>
+</ul>
+<p>You can also add names to the output generated to make it more recognizable.</p>
+<pre class="r"><code>col_prop_NA &lt;- c()
+for (i in seq_along(test_df)){
+  col_prop_NA[[i]] &lt;- prop_NA(test_df[[i]])
+  names(col_prop_NA)[i] &lt;- names(test_df)[i]
+}
+col_prop_NA</code></pre>
+<p>Practice right away! Write the above code as a function.</p>
+<pre class="r"><code>col_prop_NA &lt;- function(df){                #name &lt;- function(argument){
+  output &lt;- c()                             #output
+  for (i in seq_along(df)){                 #sequence
+    output[[i]] &lt;- prop_NA(df[[i]])         #body
+    names(output)[i] &lt;- names(df)[i]        #}
+  }
+  output
+}
+
+col_prop_NA(test_df)</code></pre>
+<p>You can the apply function above to other dataframes.</p>
+<pre class="r"><code>col_prop_NA(ChickWeight)
+col_prop_NA(Theoph)</code></pre>
+<p>Writting a for-loop is actually not the easiest way to do this in r…</p>
+<pre class="r"><code>#lapply
+apply(test_df, 2, prop_NA)
+lapply(test_df, prop_NA)</code></pre>
+<p>A group of <code>apply()</code> function can be useful alternatives for “for loops”. A concise summary of <code>apply()</code> based syntax was presented by Dr.Sam Callisto in 2018 and Dr. Ashwin Karanam in 2019 during the R for PMX student session.</p>
+<p>*<code>apply()</code>: evaluate a function over the margins of a matrix or array</p>
+<p>*<code>lapply()</code>: evaluate a function on each element in a list, and return the results as a list</p>
+<p>*<code>sapply()</code>: evaluate a function on each element in a list, and return the results in a simplified format (not always predictable, but can be convenient)</p>
+<p>*<code>vapply()</code>: similar to sapply(), but with more consistent return types</p>
+<p>*<code>tapply()</code>: evaluate a function on subsets of a vector; alternative to group_by() for dealing with subsets</p>
+<p>“Purr” package within “Tidyverse” provide similar functions but is suggested to be more powerful.</p>
+</div>
+<div id="break-and-next" class="section level4">
+<h4>break and next</h4>
+<p><code>break</code> enables you to stop the loop when encounter certain elements.</p>
+<pre class="r"><code>output &lt;- c()
+for (i in seq_along(test_df)){
+  output[[i]] &lt;- prop_NA(test_df[[i]])
+  names(output)[i] &lt;- names(test_df)[i]
+  if (i == 3) {
+    break
+  }
+}
+output
+
+#Similarly we can create this as a function
+col_prop_NA &lt;- function(df, end){
+  output &lt;- c()
+  for (i in seq_along(df)){
+    output[[i]] &lt;- prop_NA(df[[i]])
+    names(output)[i] &lt;- names(df)[i]
+    if (i == end) break
+  }
+output
+}
+
+col_prop_NA(df = test_df, end = 3)</code></pre>
+<p>Unlike <code>break</code>, <code>next</code> will enable you to skip certain elements without stopping the entire loop.</p>
+<pre class="r"><code>output &lt;- c()
+for (i in seq_along(test_df)){
+  if (i == 3) next
+  output[[i]] &lt;- prop_NA(test_df[[i]])
+  names(output)[i] &lt;- names(test_df)[i]
+}
+
+output &lt;- output[!is.na(output)]      #remove column skipped
+output
+
+#Create a function for this as well
+col_prop_NA &lt;- function(df, skip){
+  output &lt;- c()
+  for (i in seq_along(test_df)){
+    if (i == skip) next
+    output[[i]] &lt;- prop_NA(test_df[[i]])
+    names(output)[i] &lt;- names(test_df)[i]
+  }
+  output &lt;- output[!is.na(output)]    
+  output
+}
+
+col_prop_NA(df_test_df, skip = 3)</code></pre>
+</div>
+</div>
+<div id="nesting-for-loops-example-2" class="section level3">
+<h3>Nesting for-loops (example 2)</h3>
+<p>Sometimes, you may need to loop over multiple levels instead just one level. In these situations, you can use multiple for loops nested with each other</p>
+<p>Example 2</p>
+<pre class="r"><code>#assemble dataset for example 2
+
+#Description: 10 patients, each patients go through 3 occasions, at each occation, 3 systolic blood pressure (SBP) measurenments are recorded
+
+set.seed(0720)
+
+sbp &lt;- data.frame(
+  ID  = c(rep(1:10,9)),
+  OCC = c(rep(rep(1:3,each = 10), 3)),
+  SBP  = rnorm(90, mean = 130, sd = 13)
+)</code></pre>
+<p>*purpose: calculate average systolic blood pressure (SBP) for each patients at each occasion</p>
+<pre class="r"><code>var &lt;- data.frame(NULL)
+
+for (i in sbp$ID){
+  temp1 &lt;- subset(sbp, ID == i)
+  
+  for (j in temp1$OCC){
+    temp2 &lt;- subset(temp1, OCC == j)
+    var[i,j] = variance(temp2$SBP)            #function created above
+    rownames(var)[i] = paste(&quot;ID&quot; , i, &quot; &quot;)
+    colnames(var)[j] = paste(&quot;OCC&quot;, j, &quot; &quot;)
+  }
+}
+
+var</code></pre>
+<p>*Question: We have a dataset which includes 10 patients. Each patients have 3 occasions. Each occasion have 3 time points. At each time point, 3 sbp measurements are taken. If you want to write a for loop to calculate the variance of sbp at each time point of each occasion for each patient. How many levels of nesting will you need?</p>
+</div>
+<div id="while-loops-example-3" class="section level3">
+<h3>While-loops (example 3)</h3>
+<p>This type of looping structure is useful for situations when the number of iterations necessary for the task to finish is unknown. It should be noted that all for-loops can be re-written as as a while-loop, but the opposite is not true.</p>
+<p>Example 3<br />
+*Purpose: Using trapezoidal rules, calculate AUC from 0 to 8hrs using PK profile simulated by one compartment model.</p>
+<p><span class="math inline">\(AUC_{i} = \frac{(Cp_{i} - Cp_{i-1}) \times (t_{i}-t_{i-1})}{2}\)</span></p>
+<p><span class="math inline">\(AUC_{0-t} = \sum_{i=1}^{n}AUC_{i}\)</span></p>
+<pre class="r"><code>#code for example 3
+
+AUC &lt;- 0
+i &lt;- 1
+
+while (i &lt;= 8){
+  AUC &lt;- AUC + ((Conc[i+1] + Conc[i]) * (t[i+1] - t[i]))/2
+  i = i + 1
+}
+
+paste0(&quot;AUC_0-&quot;, i-1, &quot;=&quot;, AUC, sep=&quot; &quot;)</code></pre>
+<p>*Question: Write a function to calculate AUC from 0 to t for any t specified</p>
+</div>
+<div id="repeat" class="section level3">
+<h3>Repeat</h3>
+<p>A modifed version of the while loop is repeat, which will keep running until it reaches a break statement.</p>
+<p>Write example 3 with repeat:</p>
+<pre class="r"><code>AUC &lt;- 0
+i &lt;- 1
+
+repeat{
+  AUC &lt;- AUC + ((Conc[i+1] + Conc[i]) * (t[i+1] - t[i]))/2
+  if (i == 8) break
+  i = i + 1
+}
+
+paste0(&quot;AUC_0-&quot;, i, &quot;=&quot;, AUC, sep=&quot; &quot;)</code></pre>
+</div>
 </div>
 <div id="resources" class="section level1">
 <h1>Resources:</h1>
@@ -466,6 +683,31 @@ simulateOneTwoCmtIV &lt;- function(Dose, Time, Cmt) {
 <li>R for Data Science by Grlemund and Wickham (2017), online at <a href="https://r4ds.had.co.nz/" class="uri">https://r4ds.had.co.nz/</a></li>
 <li>Advanced R by Wickham, online at <a href="http://adv-r.had.co.nz/" class="uri">http://adv-r.had.co.nz/</a></li>
 </ol>
+</div>
+<div id="session-info" class="section level1">
+<h1>Session Info:</h1>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>## R version 3.6.1 (2019-07-05)
+## Platform: x86_64-w64-mingw32/x64 (64-bit)
+## Running under: Windows 10 x64 (build 18363)
+## 
+## Matrix products: default
+## 
+## locale:
+## [1] LC_COLLATE=English_United States.1252 
+## [2] LC_CTYPE=English_United States.1252   
+## [3] LC_MONETARY=English_United States.1252
+## [4] LC_NUMERIC=C                          
+## [5] LC_TIME=English_United States.1252    
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## loaded via a namespace (and not attached):
+##  [1] compiler_3.6.1  magrittr_1.5    tools_3.6.1     htmltools_0.4.0
+##  [5] yaml_2.2.1      Rcpp_1.0.4.6    stringi_1.4.6   rmarkdown_1.16 
+##  [9] knitr_1.28      stringr_1.4.0   xfun_0.14       digest_0.6.25  
+## [13] rlang_0.4.6     evaluate_0.14</code></pre>
 </div>
 
 
