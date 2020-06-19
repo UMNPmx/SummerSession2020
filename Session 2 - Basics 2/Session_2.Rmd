@@ -21,6 +21,8 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, results=FALSE)
     + For loops
     + Nesting
     + While loops
+    
+\newpage
 
 # Functions
 
@@ -204,86 +206,130 @@ simulateOneTwoCmtIV <- function(Dose, Time, Cmt) {
 #simulateOneTwoCmtIV(100, 24, 3)
 ```
 
+\newpage
+
 # Loops
 
-## What is loop? 
-
+### Concepts
+#### What is loop? 
 A loop is a sequence of instructions that is repeated until a certain condition is reached. It allows you to repeat operations multiple times without copy-pasting sections of your code. 
 
-## For Loop
+#### Why we need loops? 
+Similar to function writting, using loops can avoid writing same or similar codes repeatedly. 
 
-### Three essential components to write a for loop
+### for-loops
+#### Three essential components to write a for loop
 * Output
 * Sequence
 * Body
 
+#### Syntax in general (example 1)
+`output <- c()`  
+`for (val in sequence){body}`  
+`output`
+  
+    
+Example 1    
 ```{r}
-#Assemble a simple dataset
+#Assemble dataset for example 1
 test_df <- data.frame(
   v1 = c(1:5, NA, 6:8, NA), 
   v2 = seq(1,10,1),                         #seq(from, to, by)
   v3 = c(letters[1:9], NA),                 #letter() generate lower case letters
   v4 = c("apple", "banana", NA, "cherry", NA, NA, NA, "orange", NA, NA)
   )
+test_df
+```
 
-#calculate the proportion of NA using the prop_NA function written by Jay
+* purpose: Using the `prop_NA()` created to calculate the proportion of NAs in each column. 
+
+```{r}
 prop_NA(test_df$v1) 
 prop_NA(test_df$v2)
 prop_NA(test_df$v3)
 prop_NA(test_df$v4)
+```
 
-#alternatively
+Alternatively, we can use a for-loop
+
+```{r}
 output <- c()                         #output
 for (i in 1:4){                       #sequence
   output[i] <- prop_NA(test_df[,i])   #body
 }
 output
+```
 
-#fancier
-#seq_along() creates a sequence from 1 to the length of the input
-#test? what other function could be used here? seq(1:ncol(test_df))/1:ncol(test_df)
-#[[]] can be used for elements selection for both vector and dataframe otherwise will have to use different syntax
+You can write it in a fancier way which also improves its generalizability. 
 
+```{r}
 output <- c()
-for (i in seq_along(test_df)){       
+for (i in seq_along(test_df)){         
   output[[i]] <- prop_NA(test_df[[i]]) 
 }
 output
+```
 
-#add names
+* seq_along() creates a sequence from 1 to the length of the input
+* [[ ]] can be used for elements selection for both vector and dataframe otherwise will have to use different syntax  
+  
+  
+You can also add names to the output generated to make it more recognizable. 
+
+```{r}
 col_prop_NA <- c()
 for (i in seq_along(test_df)){
   col_prop_NA[[i]] <- prop_NA(test_df[[i]])
   names(col_prop_NA)[i] <- names(test_df)[i]
 }
 col_prop_NA
+```
 
-#create a function
-col_prop_NA <- function(df){                #name <- function(argument){}
+Practice right away! Write the above code as a function. 
+
+```{r}
+col_prop_NA <- function(df){                #name <- function(argument){
   output <- c()                             #output
   for (i in seq_along(df)){                 #sequence
     output[[i]] <- prop_NA(df[[i]])         #body
-    names(output)[i] <- names(df)[i]
+    names(output)[i] <- names(df)[i]        #}
   }
   output
 }
 
 col_prop_NA(test_df)
+```
 
+You can the apply function above to other dataframes.  
+
+```{r}
 col_prop_NA(ChickWeight)
+col_prop_NA(Theoph)
+```
 
+Writting a for-loop is actually not the easiest way to do this in r...
+
+```{r}
 #lapply
 apply(test_df, 2, prop_NA)
 lapply(test_df, prop_NA)
 ```
 
+A group of `apply()` function can be useful alternatives for "for loops". A concise summary of `apply()` based syntax was presented by Dr.Sam Callisto in 2018 and Dr. Ashwin Karanam in 2019 during the R for PMX student session.   
 
-### Practice for loops writting
+*`apply()`: evaluate a function over the margins of a matrix or array 
+*`lapply()`: evaluate a function on each element in a list, and return the results as a list 
+*`sapply()`: evaluate a function on each element in a list, and return the results in a “simplified   form” (not always predictable, but can be convenient) 
+*`vapply()`: similar to sapply(), but with more consistent return types 
+*`tapply()`: evaluate a function on subsets of a vector; alternative to group_by() for dealing with subsets
 
-### break and next
+"Purr" package within "Tidyverse" provide similar functions but is suggested to be more powerful. 
+
+#### break and next
+
+`break` enables you to stop the loop when encounter certain elements. 
 
 ```{r}
-
 output <- c()
 for (i in seq_along(test_df)){
   output[[i]] <- prop_NA(test_df[[i]])
@@ -294,6 +340,7 @@ for (i in seq_along(test_df)){
 }
 output
 
+#Similarly we can create this as a function
 col_prop_NA <- function(df, end){
   output <- c()
   for (i in seq_along(df)){
@@ -305,7 +352,11 @@ output
 }
 
 col_prop_NA(df = test_df, end = 3)
+```
 
+Unlike `break`, `next` will enable you to skip certain elements without stopping the entire loop. 
+
+```{r}
 output <- c()
 for (i in seq_along(test_df)){
   if (i == 3) next
@@ -313,9 +364,10 @@ for (i in seq_along(test_df)){
   names(output)[i] <- names(test_df)[i]
 }
 
-output <- output[!is.na(output)]    #remove column skipped
+output <- output[!is.na(output)]      #remove column skipped
 output
 
+#Create a function for this as well
 col_prop_NA <- function(df, skip){
   output <- c()
   for (i in seq_along(test_df)){
@@ -323,25 +375,24 @@ col_prop_NA <- function(df, skip){
     output[[i]] <- prop_NA(test_df[[i]])
     names(output)[i] <- names(test_df)[i]
   }
-  output <- output[!is.na(output)]    #remove column skipped
+  output <- output[!is.na(output)]    
   output
 }
 
 col_prop_NA(df_test_df, skip = 3)
-
-
 ```
 
 
-### nesting for loops
+### Nesting for-loops (example 2)
 
+Sometimes, you may need to loop over multiple levels instead just one level. In these situations, you can use multiple for loops nested with each other
+
+Example 2
 ```{r}
-#assemble another dataset
+#assemble dataset for example 2
 
 #Description: 10 patients, each patients go through 3 occasions, at each occation, 3 systolic blood pressure (SBP) measurenments are recorded
-#purpose: calculate average blood pressure for each patients at each period 
 
-#create dataset
 set.seed(0720)
 
 sbp <- data.frame(
@@ -349,7 +400,10 @@ sbp <- data.frame(
   OCC = c(rep(rep(1:3,each = 10), 3)),
   SBP  = rnorm(90, mean = 130, sd = 13)
 )
+```
+*purpose: calculate average systolic blood pressure (SBP) for each patients at each occasion
 
+```{r}
 var <- data.frame(NULL)
 
 for (i in sbp$ID){
@@ -357,25 +411,30 @@ for (i in sbp$ID){
   
   for (j in temp1$OCC){
     temp2 <- subset(temp1, OCC == j)
-    var[i,j] = variance(temp2$SBP) 
+    var[i,j] = variance(temp2$SBP)            #function created above
     rownames(var)[i] = paste("ID" , i, " ")
     colnames(var)[j] = paste("OCC", j, " ")
   }
-  
 }
 
 var
-
-#questions: We have a dataset which includes 10 patients. Each patients have 3 occasions. Each occasion have 3 time points. At each time point, 3 sbp measurements are taken. 
-
-#If you want to write a for loop to calculate the variance of sbp at each time point of each occasion for each patient. How many levels of nesting will you need? 
 ```
 
+*Question: We have a dataset which includes 10 patients. Each patients have 3 occasions. Each occasion have 3 time points. At each time point, 3 sbp measurements are taken. If you want to write a for loop to calculate the variance of sbp at each time point of each occasion for each patient. How many levels of nesting will you need? 
 
-## While loop
+### While-loops (example 3) 
+
+This type of looping structure is useful for situations when the number of iterations necessary for the task to finish is unknown. It should be noted that all for-loops can be re-written as as a while-loop, but the opposite is not true.
+
+Example 3  
+*Purpose: Using trapezoidal rules, calculate AUC from 0 to 8hrs using PK profile simulated by one compartment model.  
+
+$AUC_{i} = \frac{(Cp_{i} - Cp_{i-1}) \times (t_{i}-t_{i-1})}{2}$  
+
+$AUC_{0-t} = \sum_{i=1}^{n}AUC_{i}$
 
 ```{r}
-#purpose: write a while loop to calculate the AUC(0-t) of PK profile simulated by one compartmental model by Jay
+#code for example 3
 
 AUC <- 0
 i <- 1
@@ -386,11 +445,14 @@ while (i <= 8){
 }
 
 paste0("AUC_0-", i-1, "=", AUC, sep=" ")
-
-#test: write a function to compute AUC_0-t for any t specified
 ```
+*Question: Write a function to calculate AUC from 0 to t for any t specified
 
-##repeat
+### Repeat
+
+A modifed version of the while loop is repeat, which will keep running until it reaches a break statement.  
+
+Write example 3 with repeat: 
 ```{r}
 AUC <- 0
 i <- 1
