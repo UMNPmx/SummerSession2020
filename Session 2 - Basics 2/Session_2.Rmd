@@ -1,12 +1,14 @@
 ---
 title: "Session 2-Functions and Loops"
-author: "Ya-Feng Wen"
+author: "Ya-Feng Wen & Shen Cheng"
 date: "`r Sys.Date()`"
-output: 
+output:
+  pdf_document:
+    toc: yes
   html_document:
-    toc: true
-    toc_float: true
     code_folding: hide
+    toc: yes
+    toc_float: yes
 ---
 
 ```{r global_options, include=FALSE}
@@ -17,6 +19,7 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, results=FALSE)
 + Functions
 + Loops
     + For loops
+    + Nesting
     + While loops
 
 # Functions
@@ -201,7 +204,205 @@ simulateOneTwoCmtIV <- function(Dose, Time, Cmt) {
 #simulateOneTwoCmtIV(100, 24, 3)
 ```
 
+# Loops
 
+## What is loop? 
+
+A loop is a sequence of instructions that is repeated until a certain condition is reached. It allows you to repeat operations multiple times without copy-pasting sections of your code. 
+
+## For Loop
+
+### Three essential components to write a for loop
+* Output
+* Sequence
+* Body
+
+```{r}
+#Assemble a simple dataset
+test_df <- data.frame(
+  v1 = c(1:5, NA, 6:8, NA), 
+  v2 = seq(1,10,1),                         #seq(from, to, by)
+  v3 = c(letters[1:9], NA),                 #letter() generate lower case letters
+  v4 = c("apple", "banana", NA, "cherry", NA, NA, NA, "orange", NA, NA)
+  )
+
+#calculate the proportion of NA using the prop_NA function written by Jay
+prop_NA(test_df$v1) 
+prop_NA(test_df$v2)
+prop_NA(test_df$v3)
+prop_NA(test_df$v4)
+
+#alternatively
+output <- c()                         #output
+for (i in 1:4){                       #sequence
+  output[i] <- prop_NA(test_df[,i])   #body
+}
+output
+
+#fancier
+#seq_along() creates a sequence from 1 to the length of the input
+#test? what other function could be used here? seq(1:ncol(test_df))/1:ncol(test_df)
+#[[]] can be used for elements selection for both vector and dataframe otherwise will have to use different syntax
+
+output <- c()
+for (i in seq_along(test_df)){       
+  output[[i]] <- prop_NA(test_df[[i]]) 
+}
+output
+
+#add names
+col_prop_NA <- c()
+for (i in seq_along(test_df)){
+  col_prop_NA[[i]] <- prop_NA(test_df[[i]])
+  names(col_prop_NA)[i] <- names(test_df)[i]
+}
+col_prop_NA
+
+#create a function
+col_prop_NA <- function(df){                #name <- function(argument){}
+  output <- c()                             #output
+  for (i in seq_along(df)){                 #sequence
+    output[[i]] <- prop_NA(df[[i]])         #body
+    names(output)[i] <- names(df)[i]
+  }
+  output
+}
+
+col_prop_NA(test_df)
+
+col_prop_NA(ChickWeight)
+
+#lapply
+apply(test_df, 2, prop_NA)
+lapply(test_df, prop_NA)
+```
+
+
+### Practice for loops writting
+
+### break and next
+
+```{r}
+
+output <- c()
+for (i in seq_along(test_df)){
+  output[[i]] <- prop_NA(test_df[[i]])
+  names(output)[i] <- names(test_df)[i]
+  if (i == 3) {
+    break
+  }
+}
+output
+
+col_prop_NA <- function(df, end){
+  output <- c()
+  for (i in seq_along(df)){
+    output[[i]] <- prop_NA(df[[i]])
+    names(output)[i] <- names(df)[i]
+    if (i == end) break
+  }
+output
+}
+
+col_prop_NA(df = test_df, end = 3)
+
+output <- c()
+for (i in seq_along(test_df)){
+  if (i == 3) next
+  output[[i]] <- prop_NA(test_df[[i]])
+  names(output)[i] <- names(test_df)[i]
+}
+
+output <- output[!is.na(output)]    #remove column skipped
+output
+
+col_prop_NA <- function(df, skip){
+  output <- c()
+  for (i in seq_along(test_df)){
+    if (i == skip) next
+    output[[i]] <- prop_NA(test_df[[i]])
+    names(output)[i] <- names(test_df)[i]
+  }
+  output <- output[!is.na(output)]    #remove column skipped
+  output
+}
+
+col_prop_NA(df_test_df, skip = 3)
+
+
+```
+
+
+### nesting for loops
+
+```{r}
+#assemble another dataset
+
+#Description: 10 patients, each patients go through 3 occasions, at each occation, 3 systolic blood pressure (SBP) measurenments are recorded
+#purpose: calculate average blood pressure for each patients at each period 
+
+#create dataset
+set.seed(0720)
+
+sbp <- data.frame(
+  ID  = c(rep(1:10,9)),
+  OCC = c(rep(rep(1:3,each = 10), 3)),
+  SBP  = rnorm(90, mean = 130, sd = 13)
+)
+
+var <- data.frame(NULL)
+
+for (i in sbp$ID){
+  temp1 <- subset(sbp, ID == i)
+  
+  for (j in temp1$OCC){
+    temp2 <- subset(temp1, OCC == j)
+    var[i,j] = variance(temp2$SBP) 
+    rownames(var)[i] = paste("ID" , i, " ")
+    colnames(var)[j] = paste("OCC", j, " ")
+  }
+  
+}
+
+var
+
+#questions: We have a dataset which includes 10 patients. Each patients have 3 occasions. Each occasion have 3 time points. At each time point, 3 sbp measurements are taken. 
+
+#If you want to write a for loop to calculate the variance of sbp at each time point of each occasion for each patient. How many levels of nesting will you need? 
+```
+
+
+## While loop
+
+```{r}
+#purpose: write a while loop to calculate the AUC(0-t) of PK profile simulated by one compartmental model by Jay
+
+AUC <- 0
+i <- 1
+
+while (i <= 8){
+  AUC <- AUC + ((Conc[i+1] + Conc[i]) * (t[i+1] - t[i]))/2
+  i = i + 1
+}
+
+paste0("AUC_0-", i-1, "=", AUC, sep=" ")
+
+#test: write a function to compute AUC_0-t for any t specified
+```
+
+##repeat
+```{r}
+AUC <- 0
+i <- 1
+
+repeat{
+  AUC <- AUC + ((Conc[i+1] + Conc[i]) * (t[i+1] - t[i]))/2
+  if (i == 8) break
+  i = i + 1
+}
+
+paste0("AUC_0-", i, "=", AUC, sep=" ")
+```
 
 
 # Resources: 
