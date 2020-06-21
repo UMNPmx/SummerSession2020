@@ -407,15 +407,15 @@ sbp <- data.frame(
   SBP  = rnorm(90, mean = 130, sd = 13)
 )
 ```
-*purpose: calculate average systolic blood pressure (SBP) for each patients at each occasion
+*purpose: calculate variance of systolic blood pressure (SBP) for each patients at each occasion
 
 ```{r}
 var <- data.frame(NULL)
 
-for (i in sbp$ID){
+for (i in unique(sbp$ID)){
   temp1 <- subset(sbp, ID == i)
   
-  for (j in temp1$OCC){
+  for (j in unique(temp1$OCC)){
     temp2 <- subset(temp1, OCC == j)
     var[i,j] = variance(temp2$SBP)            #function created above
     rownames(var)[i] = paste("ID" , i, " ")
@@ -433,7 +433,7 @@ var
 Example 3  
 *Purpose: Using trapezoidal rules, calculate $AUC_{0-8h}$ using PK profile simulated by one compartment model.  
 
-$$AUC_{i} = \frac{(Cp_{i} - Cp_{i-1}) \times (t_{i}-t_{i-1})}{2}$$  
+$$AUC_{i} = \frac{(Cp_{i} + Cp_{i-1}) \times (t_{i}-t_{i-1})}{2}$$  
 
 $$AUC_{0-t} = \sum_{i=1}^{n}AUC_{i}$$
 Recall the one compartment PK profile we simulated previously in the funtion writting part. 
