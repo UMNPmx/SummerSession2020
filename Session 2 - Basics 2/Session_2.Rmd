@@ -420,33 +420,66 @@ for (i in sbp$ID){
 var
 ```
 
-*Question: We have a dataset which includes 10 patients. Each patients have 3 occasions. Each occasion have 3 time points. At each time point, 3 sbp measurements are taken. If you want to write a for loop to calculate the variance of sbp at each time point of each occasion for each patient. How many levels of nesting will you need? 
+*Practice: We have a dataset which includes 10 patients. Each patients have 3 occasions. Each occasion have 3 time points. At each time point, 3 sbp measurements are taken. If you want to write a for loop to calculate the variance of sbp at each time point of each occasion for each patient. How many levels of nesting will you need? 
 
 ### While-loops (example 3) 
 
-This type of looping structure is useful for situations when the number of iterations necessary for the task to finish is unknown. It should be noted that all for-loops can be re-written as as a while-loop, but the opposite is not true.
-
 Example 3  
-*Purpose: Using trapezoidal rules, calculate AUC from 0 to 8hrs using PK profile simulated by one compartment model.  
+*Purpose: Using trapezoidal rules, calculate $AUC_{0-8h}$ using PK profile simulated by one compartment model.  
 
-$AUC_{i} = \frac{(Cp_{i} - Cp_{i-1}) \times (t_{i}-t_{i-1})}{2}$  
+$$AUC_{i} = \frac{(Cp_{i} - Cp_{i-1}) \times (t_{i}-t_{i-1})}{2}$$  
 
-$AUC_{0-t} = \sum_{i=1}^{n}AUC_{i}$
+$$AUC_{0-t} = \sum_{i=1}^{n}AUC_{i}$$
+Recall the one compartment PK profile we simulated previously in the funtion writting part. 
+```{r}
+oneCmtIV <- function(Dose,Time) {
+  # define parameters
+  Vc = 2 # L
+  k = 0.1 # hr-1
+  # simulation time
+  t = seq(0, Time, 1)
+  # calculate concentration
+  C0 = Dose/Vc
+  Conc = C0 * exp(-k*t)
+  # plot
+  plot(Conc ~ t)
+}
+
+oneCmtIV(Dose = 100, Time = 24)
+```
 
 ```{r}
-#code for example 3
+#AUC 0 to 8hrs calculation
 
 AUC <- 0
 i <- 1
 
-while (i <= 8){
+while (i <= 9){                                             #8hrs is the 9th element in vector t
   AUC <- AUC + ((Conc[i+1] + Conc[i]) * (t[i+1] - t[i]))/2
   i = i + 1
 }
 
-paste0("AUC_0-", i-1, "=", AUC, sep=" ")
+paste0("AUC_0-", i-2, "=", AUC, sep=" ")
 ```
-*Question: Write a function to calculate AUC from 0 to t for any t specified
+*Practice: Write a function to calculate $AUC_{0-t}$ for any t specified?  
+  
+  
+This type of looping structure is useful for situations when the number of iterations necessary for the task to finish is unknown. It should be noted that all for-loops can be re-written as as a while-loop, but the opposite is not true.  
+
+*Question: At least how many time points simulated we need to include to have a $AUC_{0-t}$ more than 300? 
+
+```{r}
+AUC <- 0 
+i <- 1
+
+while(AUC <= 300){
+  AUC <- AUC + ((Conc[i+1] + Conc[i]) * (t[i+1] - t[i]))/2
+  i = i + 1
+}
+
+paste0("At least ", i - 1, " time points needed to have a AUC more than 300", sep = " ")
+```
+
 
 ### Repeat
 
@@ -459,11 +492,11 @@ i <- 1
 
 repeat{
   AUC <- AUC + ((Conc[i+1] + Conc[i]) * (t[i+1] - t[i]))/2
-  if (i == 8) break
+  if (i == 9) break
   i = i + 1
 }
 
-paste0("AUC_0-", i, "=", AUC, sep=" ")
+paste0("AUC_0-", i-1, "=", AUC, sep=" ")
 ```
 
 
