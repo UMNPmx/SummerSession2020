@@ -27,7 +27,7 @@ knitr::opts_chunk$set(warning=FALSE, message=FALSE, results=FALSE)
 # Functions
 
 ### When should you write a function?
-When you’ve copied and pasted a block of code more than twice! It's called the DRY ("Do not repeat yourself") principle.
+When you have copied and pasted a block of code more than twice! It's called the DRY ("Do not repeat yourself") principle.
 
 ### Benefits of a function
 
@@ -45,7 +45,7 @@ When you’ve copied and pasted a block of code more than twice! It's called the
 2. List the inputs, or **arguments** (should be nouns), to the function inside `function`
 3. Place the code you have developed in body of the function, a `{` block that immediately follows `function(...)`
 
-*It’s easier to start with working code and turn it into a function; it’s harder to create a function and then try to make it work.*
+*It is easier to start with working code and turn it into a function; it is harder to create a function and then try to make it work.*
 
 4. [Unit testing](http://r-pkgs.had.co.nz/tests.html) to turn informal, interactive tests into formal, automated tests
 
@@ -117,6 +117,7 @@ variance(test) == var(test, na.rm = T)
 
 
 3. Write a function to calculate drug concentrations until time T and plot the concentration time curve. This function allows you to calcuate drug concentrations following either the one-compartment or two-compartment PK (given as IV) with linear elimination. Recall that concentration can be described as follow: 
+
 For One-Compartment: $$C(t) = C_{0} \times e^{-kt}$$
 For Two-Compartment: $$C(t) = A e^{-\alpha t} + B e^{-\beta t}$$
 
@@ -168,7 +169,7 @@ twoCmtIV <- function(Dose, Time) {
 #twoCmtIV(100, 24)
 
 
-simulateOneTwoCmtIV <- function(Dose, Time, Cmt) {
+simulateOneTwoCmtIV <- function(Dose, Time, Cmt, ...) {
   # parameters for 1-CMT
   Vc = 2 # L
   k = 0.1 # hr-1
@@ -202,6 +203,7 @@ simulateOneTwoCmtIV <- function(Dose, Time, Cmt) {
 }
 
 #simulateOneTwoCmtIV(100, 24, 1)
+#simulateOneTwoCmtIV(100, 24, 1, Vc=3)
 #simulateOneTwoCmtIV(100, 24, 2)
 #simulateOneTwoCmtIV(100, 24, 3)
 ```
@@ -318,9 +320,13 @@ lapply(test_df, prop_NA)
 A group of `apply()` function can be useful alternatives for "for loops". A concise summary of `apply()` based syntax was presented by Dr.Sam Callisto in 2018 and Dr. Ashwin Karanam in 2019 during the R for PMX student session.   
 
 *`apply()`: evaluate a function over the margins of a matrix or array 
+
 *`lapply()`: evaluate a function on each element in a list, and return the results as a list 
-*`sapply()`: evaluate a function on each element in a list, and return the results in a “simplified   form” (not always predictable, but can be convenient) 
+
+*`sapply()`: evaluate a function on each element in a list, and return the results in a simplified   format (not always predictable, but can be convenient) 
+
 *`vapply()`: similar to sapply(), but with more consistent return types 
+
 *`tapply()`: evaluate a function on subsets of a vector; alternative to group_by() for dealing with subsets
 
 "Purr" package within "Tidyverse" provide similar functions but is suggested to be more powerful. 
@@ -503,3 +509,9 @@ paste0("AUC_0-", i-1, "=", AUC, sep=" ")
 # Resources: 
 1. R for Data Science by Grlemund and Wickham (2017), online at <https://r4ds.had.co.nz/>
 2. Advanced R by Wickham, online at <http://adv-r.had.co.nz/>
+
+# Session Info:
+```{r, results=TRUE}
+sessionInfo()
+```
+
