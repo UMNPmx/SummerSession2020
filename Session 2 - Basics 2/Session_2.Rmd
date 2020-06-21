@@ -3,12 +3,12 @@ title: "Session 2-Functions and Loops"
 author: "Ya-Feng Wen & Shen Cheng"
 date: "`r Sys.Date()`"
 output:
-  pdf_document:
-    toc: yes
   html_document:
     code_folding: hide
     toc: yes
     toc_float: yes
+  pdf_document:
+    toc: yes
 ---
 
 ```{r global_options, include=FALSE}
