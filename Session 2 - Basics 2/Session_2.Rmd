@@ -219,13 +219,13 @@ A loop is a sequence of instructions that is repeated until a certain condition 
 #### Why we need loops? 
 Similar to function writting, using loops can avoid writing same or similar codes repeatedly. 
 
-### for-loops
+## For-loops (example 1)
 #### Three essential components to write a for loop
 * Output
 * Sequence
 * Body
 
-#### Syntax in general (example 1)
+#### Syntax in general 
 `output <- c()`  
 `for (val in sequence){body}`  
 `output`
@@ -389,7 +389,7 @@ col_prop_NA(df_test_df, skip = 3)
 ```
 
 
-### Nesting for-loops (example 2)
+## Nesting for-loops (example 2)
 
 Sometimes, you may need to loop over multiple levels instead just one level. In these situations, you can use multiple for loops nested with each other
 
@@ -428,7 +428,7 @@ var
 
 *Practice: We have a dataset which includes 10 patients. Each patients have 3 occasions. Each occasion have 3 time points. At each time point, 3 sbp measurements are taken. If you want to write a for loop to calculate the variance of sbp at each time point of each occasion for each patient. How many levels of nesting will you need? 
 
-### While-loops (example 3) 
+## While-loops (example 3) 
 
 Example 3  
 *Purpose: Using trapezoidal rules, calculate $AUC_{0-8h}$ using PK profile simulated by one compartment model.  
