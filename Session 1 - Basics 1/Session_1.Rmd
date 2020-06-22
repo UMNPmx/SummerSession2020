@@ -3,6 +3,8 @@ title: "Session 1: R Basics"
 author: "Ya-Feng Wen"
 date: "`r Sys.Date()`"
 output: 
+  pdf_document:
+    toc: true
   html_document:
     toc: true
     toc_float: true
@@ -41,7 +43,8 @@ updateR()
 + Available packages on R CRAN: <https://cran.r-project.org/>
 + Developed and maintained by RStudio: <https://rstudio.com/products/rpackages/> 
 + Install stable release packages from CRAN: `install.packages("the package's name")` Only need to do this once. 
-+ Use the package: `library(the package's name)`. Need for every session. 
+    + [CRAN Task Views](https://cran.r-project.org/web/views/) groups different packages based on its usage
++ Use the package: `library(the package's name)`. Need for every session.
 + Update packages: `update.packages(ask = FALSE)` (only update those on CRAN)
 + If packages is not avialble in CRAN, use `devtools::install_github("URL")`
 + Update all packages after updating R: 
