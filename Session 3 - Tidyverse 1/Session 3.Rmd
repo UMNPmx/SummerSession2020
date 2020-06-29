@@ -1,300 +1,294 @@
 ---
-title: 'Session 2: Data Manipulation'
+title: 'Session 3: Tidyverse'
 author: "Ashwin Karanam"
-date: ""
+date: "06/29/2020"
+fig.caption: false
 output:
-  pdf_document
+  html_document:
+    toc: yes
+    toc_float: yes
+  pdf_document:
+    toc: yes
 ---
 
-\tableofcontents
+# Objectives
++ What is [`tidyverse`](https://www.tidyverse.org/) and packages in [`tidyverse`](https://www.tidyverse.org/)?
++ [`readr`](https://readr.tidyverse.org/)
++ [`dplyr`](https://dplyr.tidyverse.org/)
+ 
+# What is tidyverse?
+The tidyverse is a collection of open source R packages introduced by Hadley Wickham and his team that "share an underlying design philosophy, grammar, and data structures" of [`tidy data`](https://www.jstatsoft.org/index.php/jss/article/view/v059i10/v59i10.pdf). `Tidy data` is a standard method of displaying a multivariate set of data is in the form of a data matrix in which rows correspond to sample individuals and columns to variables, so that the entry in the $i^{th}$ row and $j^{th}$ column gives the value of the $j^{th}$ variate as measured or observed on the $i^{th}$ individual.
+
+### Packages in [`tidyverse`](https://www.tidyverse.org/)
+
+```{r echo=FALSE,fig.align='center'}
+imgpath <- "Picture2.png"
+knitr::include_graphics(imgpath)
+```
+
+
+### Installing [`tidyverse`](https://www.tidyverse.org/)
+```{r eval=FALSE}
+install.packages("tidyverse")
+```
+
+```{r}
+# Call library
+library(tidyverse)
+```
+
+***
+
+# The [`readr`](https://readr.tidyverse.org/) package
+Tidyverse packages providing rectangular data importing and saving functions. Cheatsheets can be found [`here`](https://rawgit.com/rstudio/cheatsheets/master/data-import.pdf). [`readr`] is used for turning flat files into data frames.
+
+### Importing data
++ `read_csv("file.csv")`: Comma Delimited Files
++ `read_csv2("file2.csv")`: Semi-colon Delimited Files 
++ `read_delim("file.txt", delim = "|")`: Files with Any Delimiter
++ `read_fwf("file.fwf", col_positions = c(1, 3, 5))`: Fixed Width Files 
++ `read_tsv("file.tsv")`: Tab Delimited Files
+
+Let us import the `Puromycin` dataset
+```{r eval=FALSE}
+
+Puromycin <- read_csv("Puromycin.csv",
+                      #col_names = FALSE, # skip header row
+                      #col_names = c("x", "y", "z"), # provide header
+                      #skip = n, # skip nth row
+                      col_types = cols(conc = col_double(), 
+                                       rate = col_double(),
+                                       state = col_character()))
+
+# Open a tab
+View(Puromycin)
+
+# First 5 rows
+head(Puromycin)
+
+# Last 5 rows
+tail(Puromycin)
+
+# A glimpse of the dataset
+glimpse(Puromycin)
+
+```
+
+### Saving datafiles
+
++ `write_csv(x, path)`: Comma delimited file 
++ `write_delim(x, path, delim = " ")`: File with arbitrary delimiter 
++ `write_excel_csv(x, path)`: CSV for excel
++ `write_tsv(x, path)`: write_tsv
+
+Let us save a file of our own. Let's the Theophylline data into a CSV file.
+
+```{r eval = FALSE}
+
+# Take a look at the data
+View(Theoph)
+
+write_csv(Theoph,
+          "Theophylline.csv",
+          # delim = " ", #for delimited files
+          # na = "-99", # String used for missing values. Defaults to NA
+          # append = T/F #If FALSE, will overwrite existing file. 
+                         #If TRUE, will append to existing file. 
+                         #In both cases, if file does not exist a new file is created.
+          # col_names = T/F #Write columns names at the top of the file?
+          )
+```
+
+***
 
 # The [`dplyr`](https://dplyr.tidyverse.org/) package
-The provides a grammar for data manipulation.
+`dplyr` is a grammar of data manipulation, providing a consistent set of verbs that help you solve the most common data manipulation challenges. But before we explore `dplyr`, we need to understand the `pipe`/`%>%` operator from the [`magrittr`](https://magrittr.tidyverse.org/)
 
-## Load the dplyr package and data
-```{r, message=FALSE}
-library(dplyr)
-```
-Load the `Theoph` data set and save it as a data frame.
-```{r}
-df <- data.frame(Theoph)
-```
+### The `magrittr` package
+It offers a set of operators which make your code more readable. Pipes are a powerful tool for clearly expressing a sequence of multiple operations.
 
-We can use the [`dim()`](https://www.rdocumentation.org/packages/base/versions/3.5.0/topics/dim) and [`head()`](https://www.rdocumentation.org/packages/utils/versions/3.5.0/topics/head) functions from base `R` to find the dimensions and take a look at the data.
-```{r}
-dim(df)
-head(df)
-```
+Some basic piping rules:
 
-Alternately, we can load the data as a tibble, which is a specialized data frame, with the [`as_tibble()`](https://cran.r-project.org/web/packages/tibble/vignettes/tibble.html) function.  
-```{r}
-df <- as_tibble(Theoph)
++ `x %>% f` is equivalent to `f(x)`
++ `x %>% f(y)` is equivalent to `f(x, y)`
++ `x %>% f() %>% g() %>% h()` is equivalent to `h(g(f(x)))`
++ `x %>% f(y, .)` is equivalent to `f(y, x)`
++ `x %>% f(y, z = .)` is equivalent to `f(y, z = x)`
 
-df
-```
-Variable definitions for the `Theoph` data set:
+```{r eval=FALSE}
 
-+ Wt - weight of the subject (kg)
-+ Dose - dose of theophylline administered orally to the subject (mg/kg)
-+ Time - time since drug administration when the sample was drawn (hr)
-+ conc - theophylline concentration in the sample (mg/L)
+x <- rnorm(n=10,mean=20,sd=5)
 
-## [`filter()`](https://dplyr.tidyverse.org/reference/filter.html)    
+# Let's say I want to round the vector to nearest integer and then take mean
 
-The filter verb subsets the data by rows (observations). That is, it extracts particular observations based their values.
+# non-pipe formulation
+mean(round(x,digits = 0)) 
 
-Let's subset the theophylline data by weight of 70 kg or more.
-```{r}
-filter(df, Wt >= 70)
+#pipe formulation
+x %>%
+  round(digits = 0) %>% # same as round(.,digits=0)
+  mean() # same as mean(.)
+
 ```
 
-We can subset the data further with additional arguments.
-```{r}
-filter(df, Wt >= 70, Dose >= 4)
-```
-## [`select()`](https://dplyr.tidyverse.org/reference/select.html)  
+### Back to `dplyr`
+This package is massive and beautiful. We will be covering only the basics of this package, so please look at the [`cheatsheets`](https://github.com/rstudio/cheatsheets/blob/master/data-transformation.pdf)
 
-The select verb subsets the data by columns (variables). That is, it extracts particular variables based on their names.
+Let us use the Theophylline data to explore this package. First, let's start with summarizing the dataset
 
-We can extract a vector by naming one variable.
-```{r}
-select(df, conc)
-```
+```{r eval=FALSE}
 
-We can drop variables as well. Just place a minus sign in front of the variable you want to remove. The other variables will remain.
-```{r}
-select(df, -Wt)
-```
-
-Variables can be moved around if needed. Placing the `everything()` helper function will fill in the remaining variables you do not mention.
-```{r}
-select(df, Time, Subject, everything())
-```
-
-If you want to move a variable to the end of the data set, subtract then add it back. Also, you can rename variables within any `select()` function.
-```{r}
-select(df, -Wt, weight=Wt)
-```
-## [`rename()`](https://dplyr.tidyverse.org/reference/select.html)
-The rename verb keeps all variables unlike select, which keeps only the variables you mention.
-```{r}
-rename(df, weight = Wt) 
-```
-
-## An aside, the pipe operator `%>%`
-
-Takes the result from the left hand side and passes it into the function on the right hand side. This allows you to code in a more readable left-to-right fashion rather than nesting function within one another. For example, 
+Theo_summ <- 
+  Theoph %>%
+  #Summarise the data 
+  #Calculate number of subjects, weight and dose ditributions
+  summarise(nID = n_distinct(Subject), # count the number of individuals
+            `Weight (Mean,SD)` = paste(Wt %>% mean() %>% round(digits=1),
+                                       "(",
+                                       Wt %>% sd() %>% round(digits=1),
+                                       ")",
+                                       sep=""),
+            `Dose (Median,Range)` = paste(Dose %>% median() %>% round(digits=1),
+                                          "(",
+                                          range(Dose)[1],
+                                          "-",
+                                          range(Dose)[2],
+                                          ")",
+                                          sep=""))
 
 
-Let's practice using the using the filter verb to find the observations for the first subject.
-```{r}
-df %>% filter(Subject == 3)
+# Individual Cmax/Cmed
+
+Cmax.med <-
+  Theoph %>%
+  group_by(Subject) %>%
+  summarise(Cmax = max(conc),
+            Cmed = median(conc))
+
 ```
 
-We can chain pipes together to really benefit from its usefulness. Find the observed Cmax for subject three.
-```{r}
-df %>% 
-  filter(Subject == 3) %>% 
-  select(conc) %>% 
-  max()
-```
- 
+Other useful summarize functions:
 
-## [`mutate()`](https://dplyr.tidyverse.org/reference/mutate.html)
++ `summarise_all()` - Apply funs to every column.
++ `summarise_at()` - Apply funs to specific columns.
++ `summarise_if()` - Apply funs to all cols of one type.
 
-The mutate verb adds new variables.  
+Now let's try to manipulate cases/vairables:
 
-New variables can be made that are functions of existing variables. For example, perhaps we want to express time in seconds rather than hours, or convert weight in kilograms to pounds.
+```{r eval=FALSE}
 
-Let's save this to `df` with the assignment operator `<-`.
-```{r}
-df <- df %>%
-  mutate(minutes = Time * 60,
-         lbs = Wt * 2.2046)
+# Filter subjects with dose less than 4.5
+# Add a column of weight descriptor
+# Select only the Subject, Time and conc columns and weight descriptor
+# Renmae Subject to ID and conc to DV 
 
-df
-```
+Theop2 <-
+  Theoph %>%
+  filter(Dose < 4.5) %>% 
+  mutate(WTLT60 = if_else(Wt <= 60,1,0)) %>%
+  select(Subject, Time, conc, WTLT60) %>%
+  rename(ID=Subject,DV=conc)
 
-## [`arrange()`](https://dplyr.tidyverse.org/reference/arrange.html)  
-The arrange verb changes the ordering of the rows.
+## Let's create a NONMEM datatset
 
-Sort the data by increasing weight.
-```{r}
-df %>% arrange(lbs)
-```
+# Let's start with the dosing rows
 
-Use `desc()` to sort a variable in descending order.
+dosing <-
+  Theoph %>%
+  group_by(Subject) %>%
+  filter(Time == 0) %>%
+  mutate(conc = NA)
 
-```{r}
-df %>% arrange(desc(lbs))
-```
+# Concentration rows
 
-Adding verbs together.
+conc <-
+  Theoph %>%
+  group_by(Subject) %>%
+  filter(! (Time == 0 & conc == 0)) %>%
+  mutate(Time = if_else(Time == 0, 0.001, Time),
+         Dose = NA,
+         LNDV = log(conc) %>% round(2))
+         )
 
-```{r}
-df %>% 
-  filter(Time ==0) %>%
-  arrange(desc(lbs))
-```
-By subsetting and sorting the data we can see that three subjects have positive drug concentrations at time zero, and dose appears to be inversely proportional to weight.
+# join the two
 
-## [`group_by()`](https://dplyr.tidyverse.org/reference/group_by.html)
-You will usually want to group data by some variable.
+Theop_NM <-
+  dosing %>%
+  bind_rows(conc) %>%
+  arrange(Subject,.by_group=TRUE) %>%
+  mutate(MDV = if_else(is.na(Dose),0,1),
+         EVID = if_else(is.na(Dose),0,1),
+         WTLT60 = if_else(Wt <= 60,1,0)) %>%
+  rename(ID=Subject,DV=conc,AMT=Dose)
 
-Grouping doesn't change how the data looks (apart from listing
-how it's grouped), but it does change how it acts with the other `dplyr` verbs.
-```{r}
-df %>% 
-  group_by(Subject)
-```
-
-Now we can create a new columns specific to each subject with `group_by()` and `mutate()`. Let's find the Cmax and Tmax for each concentration-time profile. Since Tmax is related to the pharmacokinetic parameter Cmax, we can use the [`case_when()`](https://dplyr.tidyverse.org/reference/case_when.html) function to identify the time when Cmax is observed. This observation is saved in a temporary variable, `temp`, then dropped with the `select()` verb.
-```{r}
-df %>% 
-  group_by(Subject) %>% 
-  mutate(Cmax = max(conc),
-         temp = case_when(conc == Cmax ~ Time),
-         Tmax = max(temp, na.rm = T)) %>%
-  select(-temp)
 ```
 
-## [`summarise()`](https://dplyr.tidyverse.org/reference/summarise.html) 
-The summarise verb reduces multiple values down to a single summary.
+Other useful manipulation functions:
 
-```{r}
-df %>% 
-  summarise(meanWt = mean(Wt),
-            medWt = median(Wt),
-            n = n_distinct(Subject))
-```
-You may want to group data before summarizing.
-
-```{r}
-df %>%
-  group_by(Wt < 70) %>%
-  summarise(medDose = median(Dose),
-            meanDose = mean(Dose),
-            sdDose = sd(Dose))
-```
-
-# Let's build a data set
-## Some useful base `R` functions:
-[`seq()`](https://www.rdocumentation.org/packages/base/versions/3.5.0/topics/seq) generates regular sequences.  
-[`rep()`](https://www.rdocumentation.org/packages/base/versions/3.5.0/topics/rep) replicates values.  
-[`length()`](https://www.rdocumentation.org/packages/base/versions/3.5.0/topics/length) gets or sets the length of vectors (including lists) and factors.  
-[`unique()`](https://www.rdocumentation.org/packages/base/versions/3.5.0/topics/unique) returns a vector, data frame or array like `x` but with duplicate elements/rows removed.  
-[`sample()`](https://www.rdocumentation.org/packages/base/versions/3.5.0/topics/sample) takes a random sample of the specified size from the elements of `x` either with or without replacement.  
-[`round()`](https://www.rdocumentation.org/packages/base/versions/3.5.0/topics/Round) rounds the values to the specified number of decimal places (default 0).
-<!-- [`()`]() -->
++ `distinct(.data, ..., .keep_all = FALSE)` -  Remove rows with duplicate values
++ `sample_frac(tbl, size = 1, replace = FALSE)` - Randomly select fraction of rows
++ `slice(.data, .)` - Select rows by position
++ `transmute(.data, .)` - Compute new column(s), drop others
++ `mutate_all(.tbl, .funs, .)` - Apply funs to every column
++ `mutate_at(.tbl, .cols, .funs, .)` - Apply funs to specific columns
++ `add_column(.data, ..., .before = NULL, .after = NULL)` - Add new column(s)
 
 
-## Statistical functions in the `stats` package.
-[`rnorm()`](https://www.rdocumentation.org/packages/stats/versions/3.5.0/topics/Normal) random generation for the normal distribution with mean equal to `mean` and standard deviation equal to `sd`.
-[`runif()`](https://www.rdocumentation.org/packages/stats/versions/3.5.0/topics/Uniform) generates random deviates about the uniform distribution on the interval from `min` to `max`.
-<!-- [`rweibull()`](https://www.rdocumentation.org/packages/stats/versions/3.5.0/topics/Weibull) random generation for the Weibull distribution with parameters `shape` and `scale`. -->
+Now, let's look at combining tables
 
-## Subjects
-To create a vector for 20 subjects we can start with the `seq()` function. 
-```{r}
-seq(1:20)
-```
-If we want longitudinal (repeated measures) data we can pipe this into the `rep()` function.
-```{r}
-seq(1:20) %>% rep(10)
-```
-This isn't quite right. We could use `arrange()` to fix this, but an easier way is to use the `each =` argument in `rep()`. Note: using `rep(10)` is equivalent to `rep(times=10)`.
-```{r}
-  seq(1:20) %>% rep(each=10)
-```
-That looks better. Let's store this in a tibble named `new`.
-```{r}
-new <- seq(1:20) %>% 
-        rep(each=10) %>%
-        as_tibble()
-```
-## Sampling times
-Next, we'll create a vector of sampling times.
-```{r}
-c(0,1,2,3,4,6,9,12,18,24)
-```
-Use the `rep()` function to match `id` and save it as the variable `time`.
-```{r}
-time <-
-  c(0,1,2,3,4,6,9,12,18,24) %>% 
-  rep(20)
-```
-We can add this to the data set with `mutate()` and change the name of `value` to `id` with `rename()`.
-```{r}
-new <- new %>%
-  rename(id = value) %>%
-  mutate(time = time)
+```{r eval=FALSE}
 
-new
-```
-This is a good start but how often are sampling times this precise? We can add some variability and create a new variable. Sample from the the normal distribution with a mean of 1 and a small standard deviation, multiply by nominal time, then round the result.
-```{r}
-timeR <- time %>% 
-  '*'(rnorm(200,1,0.05)) %>% 
-  round(2)
-  
-new <- new %>% 
-      rename(nomTime = time) %>%
-      mutate(time = timeR)
+# Let's say you have a dataset with additional demographic data
 
-new
+demog <- data.frame(
+  ID = unique(Theop_NM$ID),
+  SEX = sample(c("M","F"),12,replace = TRUE),
+  BSA = rnorm(12,1.73,0.2) %>% round(2),
+  GENO = sample(c("PM","WT","FM"),12,replace = TRUE)
+)
+
+# Merge this with the NM dataset
+
+Theop_NM2 <-
+  Theop_NM %>%
+  left_join(demog,by="ID")
+
+# But we cannot have strings in NONMEM, so let us convert them to numeric
+
+Theop_NM3 <-
+  Theop_NM2 %>%
+  mutate(SEX2 = if_else(SEX == "M",1,0),
+         GENO2 = case_when(
+           GENO == "WT" ~ 0,
+           GENO == "PM" ~ 1,
+           GENO == "FM" ~ 2)
+         )
 ```
 
-## Simulating binary or categorical variables with equal probability of being chosen
+Other important join functions:
 
-```{r}
-sample(c(0,1), length(unique(new$id)), replace = T) %>% rep(each=10)
++ `right_join(x, y, by = NULL,.)` - Join matching values from x to y
++ `inner_join(x, y, by = NULL,.)` - Retain only rows with matches
++ `full_join(x, y, by = NULL,.)` - Retain all values, all rows
++ `semi_join(x, y, by = NULL, .)` - Return rows of x that have a match in y
++ `anti_join(x, y, by = NULL, .)` - Return rows of x that do not have a match in y
+
+Let's write out this file using the `write_csv()` function
+
+```{r eval=FALSE}
+
+write_csv(Theop_NM3, "Theop06292020.csv", na = ".")
+
 ```
-```{r}
-sample(c(1,2,3,4), length(unique(new$id)), replace = T) %>% rep(each=10)
-```
 
-## Use [`set.seed()`](https://www.rdocumentation.org/packages/simEd/versions/1.0.3/topics/set.seed) for reproducible results.
-```{r}
-set.seed(1907)
-sex <- sample(c(0,1), length(unique(new$id)), replace = T) %>% rep(each=10)
-```
-```{r}
-set.seed(1907)
-race <- sample(c(1,2,3,4), length(unique(new$id)), replace = T) %>% rep(each=10)
+***
 
-new <- new %>%
-    mutate(sex = sex,
-           race)
+Takehome exercises:
 
-new
-```
-Note the argument in `mutate()' to keep the same variable name.
+* The best exercise is to start working with your own dataset. The complexities and intracacies that exist in real world data cannot be replicated with dummy datasets
+* Online exercises:
+    + [`Basics`](https://www.r-exercises.com/2017/10/19/dplyr-basic-functions-exercises/?__cf_chl_jschl_tk__=41d542b09a6defe251cd1e4041302ecde9ec05b0-1593444419-0-AdclSAUs5c9KwZSvyHZPCBn4MZH94UmpsYIzDjdYXGAKFYlsIrQrGOA3AXdx9ySV8wYFTFO_ISemEK9RC-TgDvk7W6DIjDlfBIwK4pOvN-jQZ1C4OEritnEhjVLJxnwcmjXG9g3778lwTZqNeDqnQAjo2YQB0N_P8sB1XbAPOCIIgT3wY230jTwxb96xDN6xSOhqNLjyYN52P2yyODHlT_IbKCcirbNxmyYXUs-dIPu9O2387fxcoRt9zJbRDDEJ3dtI1DPxcya3XhHtE71bLKdxEYNiGbiIgjRwqkLPRj2LJd1D8c0ZLYFExEAXHOG798meX6AYFAgtP6sxUvId4h8)
+    + [`Intermediate`](https://teachingr.com/content/the-5-verbs-of-dplyr/the-5-verbs-of-dplyr-exercise.html)
+    + [`Advanced`](http://stat.cmu.edu/~ryantibs/statcomp-F18/labs/lab_11.html)
 
-## Simulate a uniform distribution of ages
-```{r}
-set.seed(1907)
-age <- runif(length(unique(new$id)), 18, 65) %>% rep(each=10) %>% floor()
 
-age
-
-new <- new %>% mutate(age)
-
-new
-```
-Check the documentation for `round()` to look at the `floor()` function and others related to it.
-<!-- ## The Weibull Distribution for age -->
-
-## Finding first and last observations for a subject in longitudial data
-```{r}
-new <- new %>% 
-  mutate(fid = as.numeric(!duplicated(new$id)),
-         lid = as.numeric(!duplicated(new$id, fromLast = T)))
-
-new
-```
-## Exercise: Summarize the new dataset.
-
-# Session information
-```{r}
-sessionInfo()
-```
