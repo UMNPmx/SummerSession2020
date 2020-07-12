@@ -1,0 +1,458 @@
+---
+title: "A concise guide to ggplot2"
+author: "Abhishek Sathe and Ashwin Karanam"
+date: "July 13, 2020"
+output:
+  html_document:
+    df_print: paged
+fig.caption: no
+editor_options:
+  chunk_output_type: console
+---
+
+\tableofcontents
+
+\newpage
+
+# 1 The [`ggplot2`](https://ggplot2.tidyverse.org/reference/ggplot2-package.html) package
+
+
+ggplot2 is a data visualization package in R created by Hadley Wickham in 2005.
+It is an implementation of  "The Grammar of Graphics" (Leland Wilkinson). It uses a layered structure to graphing which simplifies the process of coding plots in R. Intuitively, we know that any graph looks like Figure 1. ggplot adopts this concept.
+
+![](Fig1.png)
+
+
+## 1.1 The Grammar in ggplot2
+
+Any graph can be depicted using a set of layers. Seven layers can be used in ggplot2 but the first 3 layers listed below are required for ggplot to work:
+
+1. Data, the dataframe that you wish to use for plot
+2. Aesthetics (aes), specifies the desired visual properties 
+3. A geom_function, to map out the x and y values and how to represent them
+4. A stat_function, that allows statistical depiction of data
+5. Position, to determine where elements are located relative to each other
+6. A coordinate_function, to manipulate the coordinate system used to graph
+7. The two facet_functions to display multiple panels stratified by specific variables
+
+
+\newpage
+
+# 2 Hands on with ggplot2
+
+As an exampe of PK data lets use the thoephylline dataset.
+In addition we can also use the pre-exisiting mtcars and diamonds datasets.
+
+```{r message=FALSE, error=FALSE, warning=FALSE}
+library(ggplot2)
+library(dplyr)
+library(gridExtra)
+library(mrgsolve)
+library(ggpubr)
+
+##Loading datasets
+
+df <- data.frame(Theoph)
+df2 <- data.frame(mtcars)
+df3 <- data.frame(diamonds)
+```
+
+As we have already worked with this data before, let's skip the introductions and get right into the coding. Use the [`ggplot()`](https://ggplot2.tidyverse.org/reference/ggplot.html) function to create the first layer which is the base plot. 
+
+```{r fig.height=1.5,fig.width=1.5,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+ggplot(df,
+       aes(Time,conc))
+```
+
+Every plot should start with [`ggplot()`](https://ggplot2.tidyverse.org/reference/ggplot.html) as this maps the x and y axis along with which data to use. To this we add layers that inform what type of plot to create using "geoms".
+
+
+## 2.1 Scatterplots/Trendplots
+
+### 2.1.1 Sphagetti plots
+
+Trendplots are one of the most important type of plots in PMx. [`geom_line`](https://ggplot2.tidyverse.org/reference/geom_path.html) is used for connecting observations in the order they appear in. The "group" argument allows you to map a group of factors. The other way of doing this would be to use the color and linetype arguments.
+
+```{r fig.height=3,fig.width=9,fig.align='center'}
+
+a <- ggplot(df,aes(Time,conc,group=Subject))+
+  geom_point()+
+  geom_line()
+
+a
+
+b <- ggplot(df,aes(Time,conc,color=Subject))+
+  geom_point()+
+  geom_line()
+b
+
+c <- ggplot(df,aes(Time,conc,group=Subject))+
+  geom_point(aes(shape=Subject))+
+  geom_line()
+
+grid.arrange(a,b,c,ncol=3)
+
+```
+As you see they do the same thing as group, but assigns a different color/linetype to each group. Of course this is only useful if you have limited number of subgroups (as shapes/ linetype options are limited)
+
+\newpage
+
+Another commonly used transformation is for the y-axis. For log scale Y-axis, we use the [`scale_y_log10()`](https://ggplot2.tidyverse.org/reference/scale_continuous.html) function which is a variant of [`scale_y_continuous()`](https://ggplot2.tidyverse.org/reference/scale_continuous.html). Similar functions are available for x-axis transformations.
+
+```{r fig.height=2,fig.width=2,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+ggplot(df,aes(Time,conc,group=Subject))+
+  geom_point()+
+  geom_line()+
+  scale_y_log10()
+
+## Adjusting axis limits and breaks
+
+ggplot(df, aes(Time, conc, group=Subject))+
+  geom_point()+
+  geom_line()+
+scale_y_continuous(limits=c(0,15), breaks=seq(0,15,3))
+
+```
+
+Now, let's create one plot for each individual. [`facet_grid()`](https://ggplot2.tidyverse.org/reference/facet_grid.html) is one way to facet your data. This is a good option for small number of IDs, but becomes less useful with larger dataset.
+The other verb useful here is [`facet_wrap()`](https://ggplot2.tidyverse.org/reference/facet_wrap.html) which allows you to customize your grid.
+
+```{r fig.height=3.5,fig.width=8,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+c <- ggplot(df,aes(Time,conc))+
+  geom_point()+
+  geom_line()+
+  facet_grid(Subject~.)
+
+d <- ggplot(df,aes(Time,conc))+
+  geom_point()+
+  geom_line()+
+  facet_wrap(~Subject,ncol=3)
+
+grid.arrange(c,d,ncol=2)
+```
+
+We can add a second layer of faceting to this.
+
+```{r fig.height=5,fig.width=8,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+df4 <- df %>%
+  mutate(Category = if_else(Wt <= 65,
+                            "Less than or equal to 65 kg",
+                            "Greater than 65 kg"))
+
+ggplot(df4,aes(Time,conc))+
+  geom_point()+
+  geom_line()+
+  facet_grid(Subject~Category)
+
+```
+
+\newpage
+
+### 2.1.2 Trendplots
+
+With the same concentration time plot, you can add a trend line eg. a non-parametric smoother. The [`geom_smooth`](https://ggplot2.tidyverse.org/reference/geom_smooth.html) verb allows for this in ggplot.
+
+```{r fig.height=6,fig.width=6,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+e <- ggplot(df,aes(Time,conc))+
+  geom_point()+
+  geom_smooth(se=TRUE,method="loess")
+
+e
+## Adding lines to the plot
+
+f <- ggplot(df,aes(Time,conc))+
+  geom_point()+
+  geom_smooth(se=TRUE,method="loess")+
+  geom_vline(xintercept = 3.5, linetype=2,color="red")+
+  geom_hline(yintercept = 8.35, linetype=2,color="black")
+
+f
+
+
+## Adjusting transparency
+g <- ggplot(df,aes(Time,conc))+
+  geom_point()+
+  geom_line(aes(group=Subject),alpha=0.2)+
+  geom_smooth(se=TRUE,method="loess")
+g
+
+grid.arrange(e,f,g,ncol=1)
+
+```
+
+Couple of things to notice:
+
+For plot e, the grouping aesthetic is shifted to geom_point as geom_smooth does not need the grouping aesthetic.
+By default geom_smooth plots the SE and uses the loess method. Additional methods include lm, glm and gam.
+
+For plot f, using [`geom_hline()`](https://ggplot2.tidyverse.org/reference/geom_abline.html) and [`geom_vline()`](https://ggplot2.tidyverse.org/reference/geom_abline.html) creates reference lines. Can create any line using geom_abline() and providing values of intercept and slope.
+
+For plot g, we are adding individual sphagetti plots to the average plot. I am using the [`alpha`](https://ggplot2.tidyverse.org/reference/geom_path.html) argument in the geom_line to make the individual lines lighter. You can use this for any geom available.
+
+Another type of plot is an average trend plot with standard deviation. Use [`geom_ribbon()`](https://ggplot2.tidyverse.org/reference/geom_ribbon.html) for creating a shaded region in your plot. We can also use [`geom_errorbar()`](https://ggplot2.tidyverse.org/reference/geom_linerange.html) for this which would give you error bars around the mean.
+
+
+
+\newpage
+
+## 2.2 Adding a second axis and multiple trend lines
+
+You can use [`sec_axis()`](https://ggplot2.tidyverse.org/reference/sec_axis.html) to create a secondary axis, be it for x or y axes.
+
+
+Use [`geom_smooth`](https://ggplot2.tidyverse.org/reference/geom_smooth.html) for adding multiple trends. Just add a seperate [`geom_smooth`](https://ggplot2.tidyverse.org/reference/geom_smooth.html) with new mappings.
+
+Here is an example using the "mtcars" dataset
+
+```{r fig.height=5,fig.width=6,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+
+i <- ggplot(df2, aes(mpg,hp))+
+  geom_smooth(aes(color="hp"), se=FALSE)+
+  scale_y_continuous("hp", sec.axis=sec_axis(trans= ~.*1,name="disp"))+
+  geom_smooth(aes(mpg,disp,color="disp"), se=FALSE)
+
+i
+
+j<- ggplot(df2, aes(mpg,hp))+
+  geom_smooth(color="blue", se=FALSE)+
+  scale_y_continuous("hp", sec.axis=sec_axis(trans= ~.*1,name="disp"))+
+  geom_smooth(aes(mpg,disp),color="red", se=FALSE)
+
+j
+
+grid.arrange(i,j,nrow=1)
+
+```
+If you notice, in this plot the color argument is within the aesthetics argument. This forces ggplot to consider all mappings in that geom as one entity. Here we are forcing ggplot to call the first layer as hp and second as disp.
+
+In the second plot, we do not use the aesthetics mapping for color but use the manual color selection. This does not give us a legend because you manually specified which layer has which color.
+
+*****************
+
+\newpage
+
+## 2.3 Histograms
+
+Let's try a basic histogram plot of distribution of cars by displacement [`geom_histogram()`](https://ggplot2.tidyverse.org/reference/geom_histogram.html) for this.
+
+```{r fig.height=3,fig.width=5,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+ggplot(df2,aes(x=mpg))+
+  geom_histogram(binwidth=3, color="blue")
+
+## Adding borders and fill
+ggplot(df2,aes(x=as.factor(cyl)))+
+  geom_histogram(color="blue", fill="orange", stat="count")
+
+
+## Stratifying based on another variable
+
+hist1 <- ggplot(df2,aes(as.factor(cyl)))+
+  geom_histogram(aes(fill=as.factor(gear)), color="blue", position="stack", stat="count")
+
+hist1
+
+hist2 <- ggplot(df2,aes(as.factor(cyl)))+
+  geom_histogram(aes(fill=as.factor(gear)), color="blue", position="dodge", stat="count")
+
+hist2
+
+ggarrange (hist1,hist2,nrow=1, legend="right")
+ggarrange (hist1,hist2,nrow=1,common.legend=T, legend="right")
+
+
+```
+
+There are several options within [`geom_histogram()`](https://ggplot2.tidyverse.org/reference/geom_histogram.html) that let you modify the histograms.
+
+## 2.4 Boxplots
+
+Here is an example of boxplot using the diamonds dataset
+
+```{r fig.height=3,fig.width=5,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+ggplot(df3, aes(x=as.factor(cut), y=carat))+
+  geom_boxplot(color="black", fill="red")+
+  labs(x="Type of cut", y="Carat")
+
+
+### Specifying order
+
+ggplot(df3, aes(x=factor(cut, levels=c("Ideal","Good","Very Good","Premium","Fair"), ordered=TRUE), 
+                y=carat))+
+  geom_boxplot(color="black", fill="red")+
+    labs(x="Type of cut", y="Carat")
+
+
+```
+
+
+## 2.5 Formatting in ggplot
+
+### 2.5.1 Formatting the axis labels
+
+Use the [`labs()`](https://ggplot2.tidyverse.org/reference/labs.html) to edit the plot title, and axis labels. You can also use [`xlab()`](https://ggplot2.tidyverse.org/reference/labs.html), [`ylab()`](https://ggplot2.tidyverse.org/reference/labs.html) and [`ggtitle()`](https://ggplot2.tidyverse.org/reference/labs.html) to individually edit these. For this exercise let us again use the "mtcars" dataset
+
+```{r fig.height=3,fig.width=3,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+ggplot(df2, aes(mpg, wt))+
+  geom_point()+
+  labs(title="Weight vs MPG",
+       subtitle="Scatter plot",
+       x="Miles per gallon",
+       y="Weight")
+
+```
+
+### 2.5.2 Formatting legends
+
+ggplot uses the names of your columns or factors in said colums to determine the names of the legends. An easy way to override those is to use the [`scale_color_manual()`](https://ggplot2.tidyverse.org/reference/scale_manual.html) verb. This allows you to choose customize not only the names and titles, but also the color. Similar functions are available for shape [`scale_shape_manual()`](https://ggplot2.tidyverse.org/reference/scale_manual.html), fill [`scale_fill_manual()`](https://ggplot2.tidyverse.org/reference/scale_manual.html), size [`scale_size_manual()`](https://ggplot2.tidyverse.org/reference/scale_manual.html), linetype [`scale_linetype_manual()`](https://ggplot2.tidyverse.org/reference/scale_manual.html) and alpha [`scale_alpha_manual()`](https://ggplot2.tidyverse.org/reference/scale_manual.html). Similar off-shoots are available for discrete variables [`scale_*_discrete()`](https://ggplot2.tidyverse.org/reference/scale_manual.html) and continious variables [`scale_*_continuous()`](https://ggplot2.tidyverse.org/reference/scale_manual.html).
+
+```{r fig.height=4,fig.width=7,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+## Title and subtitle
+
+k <- ggplot(df2, aes(mpg, wt, color=as.factor(cyl)))+
+  geom_point()+
+  labs(title="Weight vs MPG",
+       subtitle="Correlation plot",
+       x="Miles per gallon",
+       y="Weight")
+
+k
+
+## Customizing colors and legend
+
+l <- ggplot(df2, aes(mpg, wt, color=as.factor(cyl)))+
+  geom_point()+
+  labs(title="Weight vs MPG",
+       subtitle="Correlation plot",
+       x="Miles per gallon",
+       y="Weight")+
+  scale_colour_manual(values=c("red", "blue", "black"), 
+                       name="Cylinders",
+                       breaks=c("4", "6", "8"),
+                       labels=c("4 Cyl", "6 Cyl", "8 Cyl"))
+l
+
+## Customizing shape and legend
+
+
+m <- ggplot(df2, aes(mpg, wt, shape=as.factor(cyl)))+
+  geom_point()+
+  labs(title="Weight vs MPG"~(Sigma*mu),
+       subtitle="Correlation plot",
+       x="Miles per gallon"~(Sigma),
+       y="Weight"~(mu))+
+  scale_shape_manual(values=c(2,4,6), 
+                       name="Cylinders"~(delta),
+                       breaks=c("4", "6", "8"),
+                       labels=c("4 Cyl","6 Cyl","8 Cyl"))
+m
+
+grid.arrange(k,l,m,ncol=2)
+
+```
+
+\newpage
+
+### 2.5.3 Text size formatting
+
+[`theme()`](https://ggplot2.tidyverse.org/reference/theme.html) is a great way of formatting all your text in one place. There are around 50 arguments within [`theme()`](https://ggplot2.tidyverse.org/reference/theme.html) all aimed at providing user control over the formatting.
+
+```{r fig.height=3,fig.width=6,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+## Formatting minute details of the plot
+
+ggplot(df2, aes(mpg, wt, color=as.factor(cyl)))+
+  geom_point()+
+  facet_grid(.~as.factor(cyl))+
+  labs(title="Weight vs MPG",
+       x="Miles per gallon",
+       y="Weight")+
+  scale_colour_manual(values=c("red", "blue", "black"), 
+                       name="Cylinders",
+                       breaks=c("4", "6", "8"),
+                       labels=c("4 Cyl", "6 Cyl", "8 Cyl")) +
+  theme(axis.title.x=element_text(size=15,face="bold"),
+        axis.title.y=element_text(size=15,face="bold"),
+        axis.text = element_text(size=10,angle = 45),
+        axis.ticks = element_line(size = 1),
+        axis.ticks.length = unit(.25, "cm"),
+        strip.text.x = element_text(size=10,face="italic"),
+        legend.position = c(0.95,0.7),
+        legend.title=element_text(size=10),
+        legend.text=element_text(size=8),
+        panel.spacing = unit(1, "lines"))
+
+```
+
+\newpage
+
+# 3 Colors, themes and exporting with ggplot2
+
+## 3.1 R Color
+
+This is a short section on colors and how to custmomize colors in R and in ggplot2
+
+There are several help or how-to sections on the web about R colors. There are countless times when the defaults in ggplot look decent for a presentation, but when you print it out, they look really bad. Overcome them by:
+
+1. Here is a consize guide to the color choices are given by [`Columbia-Stats`](http://www.stat.columbia.edu/~tzheng/files/Rcolor.pdf). These colors go hand in hand with [`scale_color_manual()`](https://ggplot2.tidyverse.org/reference/scale_manual.html)
+2. If you're a fan of using the color pallete instead of the names, then I suggest use this [`link`](http://research.stowers.org/mcm/efg/R/Color/Chart/ColorChart.pdf)
+3. If you want to be adventurous, there's several packages that give fun palletes like [`wesanderson`](https://github.com/karthik/wesanderson)
+
+## 3.2 Themes in ggplot
+
+There are several built in themes availabe for ggplot. Use the [`theme_*()`](https://ggplot2.tidyverse.org/reference/ggtheme.html) verb to explore the options. Here are some for demostration.
+
+```{r fig.height=3,fig.width=6,fig.align='center',message=FALSE, error=FALSE, warning=FALSE}
+
+o <- ggplot(df2, aes(mpg, wt, shape=as.factor(cyl)))+
+  theme_bw()+
+  labs (title="Theme bw")
+
+p <- ggplot(df2, aes(mpg, wt, shape=as.factor(cyl)))+
+  theme_classic()+
+  labs (title="Theme classic")
+
+q <- ggplot(df2, aes(mpg, wt, shape=as.factor(cyl)))+
+  theme_grey()+
+  labs (title="Theme grey")
+
+r <- ggplot(df2, aes(mpg, wt, shape=as.factor(cyl)))+
+  theme_light()+
+  labs (title="Theme light")
+
+grid.arrange(o,p,q,r,ncol=2)
+
+```
+
+## 3.3 Exporting publication quality images
+
+You can output almost any type of image file. The verbs are [`tiff()`](http://stat.ethz.ch/R-manual/R-devel/library/grDevices/html/png.html), [`bmp()`](http://stat.ethz.ch/R-manual/R-devel/library/grDevices/html/png.html), [`jpeg()`](http://stat.ethz.ch/R-manual/R-devel/library/grDevices/html/png.html), and [`png()`](http://stat.ethz.ch/R-manual/R-devel/library/grDevices/html/png.html). 
+
+```{r message=FALSE, error=FALSE, warning=FALSE, eval=FALSE}
+
+tiff("test.tiff", width = 9, height = 8, units = 'in', res = 300)
+l
+dev.off()
+
+```
+
+# 4 Helpful References
+
+1. [`R in Action`](https://drive.google.com/drive/folders/1ygRixRNferLieRrW6GxaKNUXeDcmrReN?usp=sharing) by Robert Kabacoff
+2. [`Hands-On Programming`](https://drive.google.com/drive/folders/1ygRixRNferLieRrW6GxaKNUXeDcmrReN?usp=sharing) with R by Garrett Grolemund
+3. [`R Cookbook`](https://drive.google.com/drive/folders/1ygRixRNferLieRrW6GxaKNUXeDcmrReN?usp=sharing) by Paul Teetor
+4. [`THE ART OF R PROGRAMMING`](https://drive.google.com/drive/folders/1ygRixRNferLieRrW6GxaKNUXeDcmrReN?usp=sharing) by Norman Matloff
+5. [`The Grammar of Graphics`](https://drive.google.com/drive/folders/1ygRixRNferLieRrW6GxaKNUXeDcmrReN?usp=sharing) by Leland Wilkinson
+6. [`A Layered Grammar of Graphics`](https://drive.google.com/drive/folders/1ygRixRNferLieRrW6GxaKNUXeDcmrReN?usp=sharing) by Hadley Wickham
+
+# 5 Session Information
+
+```{r}
+sessionInfo()
+```
