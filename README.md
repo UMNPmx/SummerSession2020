@@ -19,7 +19,7 @@ Summer 2020 R workshop for pharmacometrics related topics. Content put on by ECP
 |June 29|Ashwin, Abhishek|Tidyverse - I  <li>dplyr</li>|
 |July 6 |Mu’taz, Ashwin|Importance of Visualizations|
 |July 13|Abhishek, Mu’taz|Tidyverse - II <li>ggplot2</li>  <li>Plotly</li>|
-|July 20|Mu’taz, Ashwin|RShiny|
-|July 27|Ashwin|mrgsolve|
+|July 20|Ashwin|mrgsolve|
+|July 27|Mu’taz, Ashwin|RShiny|
 |August 3|Mu'taz, Ashwin|Rmarkdown|
 
