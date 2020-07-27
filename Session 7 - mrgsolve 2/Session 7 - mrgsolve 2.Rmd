@@ -1,0 +1,314 @@
+---
+title: '`mrgsolve` II'
+author: "Ashwin Karanam"
+date: "July 27, 2020"
+output:
+  pdf_document:
+    toc: yes
+  html_document:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning = FALSE)
+
+library(tidyverse)
+library(mrgsolve)
+library(knitr)
+```
+
+## 1. Overview of the session
+
+As our penultimate session, this will be an intermediate to advanced level session which will utilize everything we have learnt up until now including functions, tidyverse and pipes. Things can get confusing, so feel free to ask questions.  
+
+***
+
+## 2. Recap of last session:
+
+* `mrgsolve` is an `R` package for simulation from ODE-based models
+    + Free, OpenSource, GitHub, CRAN
+* Language
+    + Models written in `C++` inside model specification format
+    + Simulation specifics in an `R` Script
+* Simulations will a variation of one of the following:
+    + `model` %>% `intervention` %>% `options` %>% Go! %>% ...
+    + `model` %>% `intervention` %>% `population` %>% Go! %>% ...
+    + `model` %>% `data-set` %>% Go! %>% ... 
+        + where `data-set` = `intervention + population`
+
+***
+        
+## 3. Real life example:
+
+* "Population Pharmacokinetic Analysis and Dosing Regimen Optimization of Meropenem in Adult Patients" 
+    + Li et al. J Clin Pharmacol 2006
+* Meropenem is broad-spectrum carbapenem antibiotic
+    + Efficacy related to time above MIC 
+* IV dosing every 8 hours by infusion or bolus
+    + bolus over 3 to 5 minutes
+    + infusion over 15 to 30 minutes
+* Authors were interested in seeing if a longer infusion duration can increase time above MIC
+* Adapted from Kyle's workshop slides
+
+The model from this publication is available on DDMoRe. `Simulated_DatasetMeropenem.csv` is a simulated dataset from the study provided by the authors. Let's take a look at this dataset.
+
+```{r}
+
+data <- 
+  read_csv("Simulated_DatasetMeropenem.csv", na = '.') %>% 
+  mutate(CMT=1, DUR = AMT/RATE)
+
+n_distinct(data$ID)
+
+head(data)
+
+```
+
+Let's plot the data
+
+```{r error=FALSE}
+
+#Derive DURATION for each individual
+# x %<>% is the same as x <- x %>%
+data %<>% 
+  group_by(ID) %>% 
+  mutate(DUR = first(DUR[!is.na(AMT)])) %>% 
+  ungroup %>%
+  mutate(DUR = round(DUR,1))
+
+# Plot
+ggplot(data, aes(TIME,DV)) + 
+  geom_point() +
+  scale_y_log10() +
+  facet_wrap(~DUR) + xlim(0,8) + 
+  theme_bw()
+
+```
+
+Look at distinct values of `CMT`, `EVID`, `DUR` in data
+
+```{r}
+
+kable(count(data,CMT,EVID,DUR))
+
+```
+
+Now, let's take a look at the `mrgsolve` model file
+
+```{r}
+
+mod <- mread("meropenem")
+
+#Model overview
+mod
+
+#Parameters
+param(mod)
+
+```
+
+What does the `cpp` file look like?
+
+```{r}
+
+see(mod)
+```
+
+Some additional helpful `C++` functions are:
+
+```{r eval=FALSE}
+
+if(a == 2) b = 2;
+if(b <= 2) {
+  c=3;
+} else {
+  c=4;
+}
+double d = pow(base,exponent);
+double e = exp(3);
+double f = fabs(-4);
+double g = sqrt(5);
+double h = log(6);
+double i = log10(7);
+double j = floor(4.2);
+double k = ceil(4.2);
+
+```
+
+You can also refer to http://en.cppreference.com/w/cpp/numeric/math/tgamma for more details.
+
+***
+
+## 4. Creating visual predictive checks with `mrgsolve`
+
+We will be using the meropenem simulated data and the model described earlier for creating visual predictive checks (VPCs). According to `A Tutorial on Visual Predictive Checks. Mats O. Karlsson & Nick Holford. Page 2008`:
+
+> The visual predictive check (VPC) is a model diagnostic that can be used to: (i) allow comparison between alternative models, (ii) suggest model improvements, and (iii) support appropriateness of a model. The VPC is constructed from stochastic simulations from the model therefore all model components contribute and it can help in diagnosing both structural and stochastic contributions. In a typical VPC, the model is used to repeatedly (usually n >= 1000) simulate observations according to the original design of the study. Based on these simulations, percentiles of the simulated data are plotted versus an independent variable, usually time since start of treatment. It is then desirable that the same percentiles are calculated and plotted for the observed data to aid comparison of predictions with observations.
+
+So, things we need for a VPC:
+
+1. Observed dataset - Simulated meropenem data avaialable
+2. Study design with doses - Also from the simulated dataset
+3. Model from which iterative simulations can be performed - `meropenem.cpp` file
+4. Iterative simulation code - R code
+5. Plotting - also R code
+
+### 4.1 Observed data
+
+Let us subset the observed data which will be used for plotting at the end
+
+```{r}
+
+obs <- filter(data, EVID==0)
+head(obs)
+
+```
+
+### 4.2 Dosing data
+
+Let us subset dosing data
+
+```{r}
+
+vpcdose <- 
+  data %>%
+  group_by(ID) %>% 
+  mutate(RATE = first(RATE))
+
+
+head(vpcdose)
+```
+
+Alternatively, you could only subset dosing datasets and provide your own timepoints
+
+```{r}
+
+vpcdose.test <- filter(data, EVID==1)
+
+des1 <- tgrid(0,3.1,0.1)
+des2 <- tgrid(0,8,1)
+des <- c(des1,des2)
+des
+
+```
+
+### 4.3 Iterative simulation function
+
+We can do this two ways i) create simulation function and use `map` or ii) use `for` loops. We will create a function for simulation
+
+```{r}
+
+vpc <- function(i){
+  mod %>% 
+    data_set(vpcdose) %>% # Provide dataset with dose and times
+    carry_out(DUR) %>% # Carry the duration out for plotting
+    obsonly %>% # Only request the concentrations
+    mrgsim() %>% # simulate
+    filter(TIME > 0 & Y > 0) %>% # remove any simulations below 0
+    mutate(irep = i) # add a column called irep
+}
+
+
+```
+
+This function will return a simulated data set containing 
+
+* time as in the dataset
+* `DUR` the infusion duration
+* `TIME` > 0 and `Y` > 0
+* Labeled with replicate number `i`
+
+### 4.4 Iterative simulations
+
+Now, we need to simulate `n` replicates using this function
+
+```{r}
+
+iter <- 100
+out <- map(1:iter, vpc) %>% bind_rows()
+
+head(out)
+
+tail(out)
+
+```
+
+### 4.5 Summarize the data and plot
+
+Now we have the simulate data. All we need to do is summarize them. Let's define some functions that will helpus make summarizing easier.
+
+```{r}
+
+qt <- function(x,y) unname(quantile(x,prob=y/100))
+lo <- function(x) qt(x,5)
+hi <- function(x) qt(x,95)
+med <- function(x) qt(x,50)
+loci <- function(x) qt(x,2.5)
+hici <- function(x) qt(x,97.5)
+
+```
+
+Now summarize by iteration
+
+```{r}
+sum1 <- 
+  out %>% 
+  filter(Y > 0) %>%
+  group_by(DUR,irep,TIME) %>%
+  summarise(med=med(Y), lo=lo(Y), hi=hi(Y), N=n())
+```
+
+Next summarize this summary by ignoring iteration
+
+```{r}
+
+sum2 <- 
+  sum1 %>%
+  group_by(DUR,TIME) %>% 
+  summarise(medlo = loci(med), medmed = med(med), medhi = hici(med),
+            lolo =  loci(lo),  lomed  = med(lo),  lohi  = hici(lo),
+            hilo =  loci(hi),  himed  = med(hi),  hihi  = hici(hi))
+
+```
+
+Now we can plot
+
+```{r error=FALSE}
+col1 <- "steelblue"
+col2 <- "firebrick"
+
+p1 <- 
+  ggplot(data=sum2) + 
+  geom_point(data=obs, aes(TIME,DV),col=col2) + #add datapoints
+  geom_line(aes(TIME,y=medmed), lwd=1,col=col1) + # median line
+  geom_ribbon(aes(TIME,ymin=medlo, ymax = medhi),alpha=0.3,fill=col1) + # PI for median 
+  geom_line(aes(TIME,y=lomed), lwd=1,col=col1) + # low quantile line
+  geom_ribbon(aes(TIME,ymin=lolo, ymax=lohi),alpha=0.3,fill=col1) + # PI for low quantile
+  geom_line(aes(TIME,y=himed), lwd=1,col=col1) + # high quantile
+  geom_ribbon(aes(TIME,ymin=hilo, ymax=hihi),alpha=0.3,fill=col1) + # PI for high quantile
+  scale_y_continuous(trans="log", breaks=10^seq(-5,5)) +
+  facet_wrap(~DUR)+ 
+  theme_bw()
+
+p1
+
+```
+
+We can also summarize the observed data and add them to the plot
+
+```{r error=FALSE}
+
+obssum <- 
+  obs %>% 
+  filter(DV > 0) %>%
+  group_by(DUR,TIME) %>%
+  summarise(med=med(DV), lo=lo(DV), hi=hi(DV), N=n())
+
+p1 + 
+  geom_line(data=obssum,aes(TIME,y=med),lty=2, lwd=1) +
+  geom_line(data=obssum,aes(TIME,y=lo), lty=2, lwd=1) +
+  geom_line(data=obssum,aes(TIME,y=hi), lty=2, lwd=1)
+
+```
+
